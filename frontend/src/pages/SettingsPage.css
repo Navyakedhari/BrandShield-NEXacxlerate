@@ -234,3 +234,44 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Light mode overrides ── */
+:root[data-theme='light'] .settings-tab-btn {
+  background: rgba(0, 0, 40, 0.04);
+  border-color: var(--border-card);
+  color: var(--t-mid);
+}
+:root[data-theme='light'] .settings-tab-btn.active {
+  background: rgba(74, 92, 224, 0.10);
+  border-color: var(--accent);
+  color: var(--text-main);
+}
+:root[data-theme='light'] .settings-select {
+  background: var(--bg-inner);
+  border-color: var(--border-card);
+  color: var(--text-main);
+}
+:root[data-theme='light'] .sensitivity-summary-note {
+  background: var(--bg-inner);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .sensitivity-range-slider {
+  background: linear-gradient(90deg, var(--accent) var(--pct, 50%), var(--border-card) var(--pct, 50%));
+}
+:root[data-theme='light'] .sensitivity-range-slider::-webkit-slider-thumb {
+  border-color: var(--bg-shell);
+}
+:root[data-theme='light'] .sensitivity-range-slider::-moz-range-thumb {
+  border-color: var(--bg-shell);
+}
+:root[data-theme='light'] .words-pill-wrap {
+  background: var(--bg-inner);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .impersonation-word-pill {
+  background: rgba(0, 0, 40, 0.05);
+  border-color: rgba(0, 0, 40, 0.14);
+}
+:root[data-theme='light'] .try-rules-link {
+  color: var(--accent);
+}

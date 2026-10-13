@@ -1,4 +1,5 @@
 @import './tokens.css';
+@import './light-mode-patches.css';
 
 #root {
   width: 100%;

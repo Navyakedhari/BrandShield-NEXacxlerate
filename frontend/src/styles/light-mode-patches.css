@@ -1,0 +1,183 @@
+/*
+ * Light mode patches for page-specific CSS classes that use hardcoded
+ * rgba(255, 255, 255, ...) values for backgrounds, hover states, and borders.
+ * All rules are scoped to :root[data-theme='light'] so dark mode is unaffected.
+ */
+
+/* ── Generic row / item hover / inner surfaces ── */
+:root[data-theme='light'] .filter-item:hover,
+:root[data-theme='light'] .source-row:hover,
+:root[data-theme='light'] .report-list-item:hover,
+:root[data-theme='light'] .app-result-row:hover,
+:root[data-theme='light'] .detection-row:hover,
+:root[data-theme='light'] .inv-row:hover,
+:root[data-theme='light'] .audit-row:hover {
+  background: rgba(0, 0, 40, 0.035);
+}
+
+/* ── Social / Detection filter tabs ── */
+:root[data-theme='light'] .filter-tab {
+  background: rgba(0, 0, 40, 0.04);
+  border-color: var(--border-card);
+  color: var(--t-mid);
+}
+:root[data-theme='light'] .filter-tab:hover {
+  background: rgba(0, 0, 40, 0.07);
+}
+:root[data-theme='light'] .filter-tab.active {
+  background: rgba(74, 92, 224, 0.10);
+  border-color: var(--accent);
+  color: var(--text-main);
+}
+
+/* ── Format toggle (Reports) ── */
+:root[data-theme='light'] .format-toggle-btn {
+  background: rgba(0, 0, 40, 0.04);
+  border-color: var(--border-card);
+  color: var(--t-mid);
+}
+:root[data-theme='light'] .format-toggle-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ── Source health / status rows ── */
+:root[data-theme='light'] .source-status-row,
+:root[data-theme='light'] .source-health-row,
+:root[data-theme='light'] .collector-row {
+  background: rgba(0, 0, 40, 0.025);
+  border-color: var(--border-inner);
+}
+:root[data-theme='light'] .source-status-row:hover,
+:root[data-theme='light'] .source-health-row:hover {
+  background: rgba(0, 0, 40, 0.05);
+}
+
+/* ── Inner highlight / inline panels ── */
+:root[data-theme='light'] .inline-panel,
+:root[data-theme='light'] .detail-pane,
+:root[data-theme='light'] .evidence-box,
+:root[data-theme='light'] .code-box,
+:root[data-theme='light'] .step-content,
+:root[data-theme='light'] .setup-field-inner {
+  background: var(--bg-inner);
+  border-color: var(--border-inner);
+}
+
+/* ── Expandable / accordion ── */
+:root[data-theme='light'] .accordion-header:hover {
+  background: rgba(0, 0, 40, 0.04);
+}
+:root[data-theme='light'] .accordion-body {
+  border-top-color: var(--border-inner);
+}
+
+/* ── BrandProfile tags / pill inputs ── */
+:root[data-theme='light'] .tag-input-wrap,
+:root[data-theme='light'] .pill-input-wrap {
+  background: var(--bg-inner);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .tag-pill,
+:root[data-theme='light'] .bp-tag {
+  background: rgba(0, 0, 40, 0.05);
+  border-color: rgba(0, 0, 40, 0.14);
+  color: var(--t-strong);
+}
+
+/* ── Lookalike Lab input / score panel ── */
+:root[data-theme='light'] .lab-input-card,
+:root[data-theme='light'] .lab-score-panel {
+  background: var(--bg-card);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .lab-result-row {
+  background: rgba(0, 0, 40, 0.025);
+  border-color: var(--border-inner);
+}
+:root[data-theme='light'] .lab-result-row:hover {
+  background: rgba(0, 0, 40, 0.05);
+}
+:root[data-theme='light'] .lab-divider {
+  border-top-color: var(--border-inner);
+}
+
+/* ── Reports list ── */
+:root[data-theme='light'] .report-filter-bar {
+  background: var(--bg-inner);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .report-list-item {
+  background: rgba(0, 0, 40, 0.025);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .report-list-item.selected {
+  background: rgba(74, 92, 224, 0.07);
+  border-color: rgba(74, 92, 224, 0.30);
+}
+:root[data-theme='light'] .report-tag-pill {
+  background: rgba(0, 0, 40, 0.06);
+  border-color: rgba(0, 0, 40, 0.12);
+  color: var(--t-mid);
+}
+
+/* ── Setup page steps ── */
+:root[data-theme='light'] .step-item {
+  background: rgba(0, 0, 40, 0.03);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .step-item.active {
+  background: rgba(74, 92, 224, 0.08);
+  border-color: rgba(74, 92, 224, 0.30);
+}
+:root[data-theme='light'] .step-item.done {
+  border-color: rgba(5, 150, 105, 0.30);
+  background: rgba(5, 150, 105, 0.05);
+}
+:root[data-theme='light'] .upload-zone {
+  background: rgba(0, 0, 40, 0.03);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .upload-zone:hover {
+  background: rgba(0, 0, 40, 0.06);
+  border-color: var(--accent);
+}
+
+/* ── App Store monitoring ── */
+:root[data-theme='light'] .app-result-row {
+  background: rgba(0, 0, 40, 0.025);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .app-store-badge {
+  background: rgba(0, 0, 40, 0.06);
+  border-color: rgba(0, 0, 40, 0.12);
+  color: var(--t-strong);
+}
+
+/* ── Social monitoring detection card ── */
+:root[data-theme='light'] .detection-card {
+  background: var(--bg-card);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .detection-card:hover {
+  border-color: rgba(74, 92, 224, 0.28);
+}
+:root[data-theme='light'] .detection-inner-row {
+  border-top-color: var(--border-inner);
+}
+
+/* ── Source health detail ── */
+:root[data-theme='light'] .source-detail-divider {
+  border-top-color: var(--border-inner);
+}
+:root[data-theme='light'] .retry-history-row {
+  border-bottom-color: var(--border-inner);
+}
+
+/* ── Generic border separators ── */
+:root[data-theme='light'] .divider,
+:root[data-theme='light'] .separator,
+:root[data-theme='light'] hr {
+  border-color: var(--border-inner);
+}

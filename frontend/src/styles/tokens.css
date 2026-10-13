@@ -68,39 +68,225 @@
 /* Light theme: same token names, light values. Set with <html data-theme="light"> (see utils/theme.ts). */
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg-page: #eef0f6;
-  --bg-shell: #f7f8fc;
-  --border-shell: #dfe2ec;
-  --bg-card: #ffffff;
-  --border-card: #dcdfea;
-  --bg-inner: #f3f5fa;
-  --border-inner: #e2e5ef;
-  --text-main: #14151f;
-  --text-muted: #4d5068;
-  --text-dim: #6b6e86;
-  --accent: #4a5ce0;
-  --accent-glow: 0 0 20px rgba(74, 92, 224, 0.15);
-  --red-text: #c62f45;
-  --orange-text: #b5651d;
-  --green-text: #0f8a5f;
-  --purple-text: #6d4fd0;
-  --blue-text: #1f6fd6;
-  --btn-glow: 0 8px 24px -4px rgba(79, 99, 240, 0.3);
-  --t-strong: #1f2133;
-  --t-soft: #353850;
-  --t-mid: #4d5068;
-  --t-low: #6b6e86;
+  --bg-page:    #eef0f8;
+  --bg-shell:   #f8f9fd;
+  --border-shell: #d8dcea;
+  --bg-card:    #ffffff;
+  --border-card:  #d4d8ea;
+  --bg-inner:   #f2f4fb;
+  --border-inner: #dde0f0;
+  --text-main:  #12131e;
+  --text-muted: #464a6a;
+  --text-dim:   #656880;
+
+  --accent:       #4a5ce0;
+  --accent-glow:  0 0 20px rgba(74, 92, 224, 0.15);
+
+  --red:          #e5394e;
+  --red-text:     #b82b3f;
+  --red-bg:       rgba(229, 57, 78, 0.09);
+  --red-border:   rgba(229, 57, 78, 0.28);
+
+  --orange:       #d97706;
+  --orange-text:  #a85c00;
+  --orange-bg:    rgba(217, 119, 6, 0.09);
+  --orange-border:rgba(217, 119, 6, 0.28);
+
+  --green:        #059669;
+  --green-text:   #0a7a52;
+  --green-bg:     rgba(5, 150, 105, 0.09);
+  --green-border: rgba(5, 150, 105, 0.28);
+
+  --purple:       #7c3aed;
+  --purple-text:  #5f29bb;
+  --purple-bg:    rgba(124, 58, 237, 0.09);
+  --purple-border:rgba(124, 58, 237, 0.28);
+
+  --blue:         #2563eb;
+  --blue-text:    #1a52c7;
+  --blue-bg:      rgba(37, 99, 235, 0.09);
+  --blue-border:  rgba(37, 99, 235, 0.28);
+
+  --btn-primary-start: #4a5ce0;
+  --btn-primary-end:   #5b4fe0;
+  --btn-glow: 0 8px 24px -4px rgba(74, 92, 224, 0.35);
+
+  --t-strong: #1a1c2e;
+  --t-soft:   #303350;
+  --t-mid:    #464a6a;
+  --t-low:    #656880;
 }
+
+/* ── Light-mode overrides for hardcoded dark rgba values ── */
+
+/* Sidebar */
+:root[data-theme='light'] .app-sidebar {
+  box-shadow: 0 4px 24px -6px rgba(0, 0, 40, 0.10);
+}
+:root[data-theme='light'] .sidebar-search {
+  background: rgba(0, 0, 40, 0.04);
+}
+:root[data-theme='light'] .sidebar-search .keycap {
+  background: rgba(0, 0, 40, 0.06);
+  border-color: rgba(0, 0, 40, 0.09);
+}
+:root[data-theme='light'] .sidebar-brand-card {
+  background: rgba(0, 0, 40, 0.03);
+}
+:root[data-theme='light'] .sidebar-brand-card:hover {
+  background: rgba(0, 0, 40, 0.06);
+  border-color: rgba(0, 0, 40, 0.14);
+}
+:root[data-theme='light'] .nav-item:hover {
+  background: rgba(0, 0, 40, 0.04);
+}
+:root[data-theme='light'] .nav-item.active {
+  background: rgba(74, 92, 224, 0.10);
+  border-color: rgba(74, 92, 224, 0.38);
+  box-shadow: 0 0 18px -4px rgba(74, 92, 224, 0.28);
+}
+
+/* Header & User chip */
+:root[data-theme='light'] .bell-btn {
+  background: rgba(0, 0, 40, 0.04);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .bell-btn:hover {
+  background: rgba(0, 0, 40, 0.08);
+}
+:root[data-theme='light'] .user-chip {
+  background: rgba(0, 0, 40, 0.04);
+  border-color: var(--border-card);
+}
+:root[data-theme='light'] .user-chip:hover {
+  background: rgba(0, 0, 40, 0.08);
+  border-color: rgba(0, 0, 40, 0.18);
+}
+:root[data-theme='light'] .user-menu {
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 40, 0.18);
+}
+:root[data-theme='light'] .user-menu-role {
+  border-bottom-color: rgba(0, 0, 40, 0.08);
+}
+:root[data-theme='light'] .user-menu-item:hover {
+  background: rgba(0, 0, 40, 0.05);
+}
+
+/* Main panel shell */
+:root[data-theme='light'] .main-panel {
+  box-shadow: 0 8px 32px -10px rgba(0, 0, 40, 0.12);
+}
+
+/* Secondary button light fix */
+:root[data-theme='light'] .btn-secondary {
+  background: rgba(0, 0, 40, 0.04);
+  border-color: var(--border-card);
+  color: var(--text-main);
+}
+:root[data-theme='light'] .btn-secondary:hover {
+  background: rgba(0, 0, 40, 0.08);
+  border-color: rgba(0, 0, 40, 0.20);
+}
+
+/* Chip neutral */
+:root[data-theme='light'] .chip-neutral {
+  background: rgba(0, 0, 40, 0.06);
+  color: var(--text-muted);
+  border-color: rgba(0, 0, 40, 0.12);
+}
+
+/* Page bottom note */
+:root[data-theme='light'] .page-bottom-note {
+  border-top-color: rgba(0, 0, 40, 0.08);
+}
+
+/* Chips keep readable text on light */
 :root[data-theme='light'] .format-toggle-btn.active,
 :root[data-theme='light'] .settings-tab-btn.active,
 :root[data-theme='light'] .step-item.active .step-num,
 :root[data-theme='light'] .filter-tab.active,
 :root[data-theme='light'] .step-timeline-num,
-:root[data-theme='light'] .step-circle { color: #fff; } /* these chips keep a dark fill in both themes */
-:root[data-theme='light'] .dash-hero-card .btn-secondary,
-:root[data-theme='light'] .dash-hero-card .btn-secondary { color: #fff; border-color: rgba(255, 255, 255, 0.3); } /* the hero stays dark */
-:root[data-theme='light'] .bell-btn { background: rgba(20, 21, 31, 0.04); }
-:root[data-theme='light'] .bell-btn:hover { background: rgba(20, 21, 31, 0.08); }
+:root[data-theme='light'] .step-circle { color: #fff; }
+
+/* Hero card stays dark in both themes */
+:root[data-theme='light'] .dash-hero-card .btn-secondary { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+/* ── Dashboard light fixes ── */
+:root[data-theme='light'] .source-bar-track {
+  background: rgba(0, 0, 40, 0.07);
+}
+:root[data-theme='light'] .dash-data-table th {
+  border-bottom-color: var(--border-card);
+}
+:root[data-theme='light'] .dash-data-table td {
+  border-bottom-color: rgba(0, 0, 40, 0.05);
+}
+:root[data-theme='light'] .dash-data-table tbody tr:hover {
+  background: rgba(0, 0, 40, 0.03);
+}
+:root[data-theme='light'] .review-item-row {
+  background: rgba(0, 0, 40, 0.025);
+}
+:root[data-theme='light'] .review-item-row:hover {
+  background: rgba(0, 0, 40, 0.05);
+  border-color: rgba(0, 0, 40, 0.10);
+}
+:root[data-theme='light'] .review-card {
+  background: linear-gradient(180deg, rgba(217, 119, 6, 0.07), rgba(217, 119, 6, 0.015) 60%), var(--bg-card);
+  border-color: rgba(217, 119, 6, 0.22);
+}
+:root[data-theme='light'] .cell-muted { color: var(--t-mid); }
+:root[data-theme='light'] .why-flagged-body { color: var(--t-mid); }
+
+/* ── Modal / overlay ── */
+:root[data-theme='light'] .modal-overlay {
+  background: rgba(10, 12, 30, 0.45);
+}
+:root[data-theme='light'] .modal-box {
+  box-shadow: 0 24px 60px -16px rgba(0, 0, 40, 0.25);
+}
+
+/* ── Tables across all pages ── */
+:root[data-theme='light'] table th {
+  border-bottom-color: var(--border-card);
+}
+:root[data-theme='light'] table td {
+  border-bottom-color: rgba(0, 0, 40, 0.06);
+}
+:root[data-theme='light'] table tbody tr:hover {
+  background: rgba(0, 0, 40, 0.03);
+}
+
+/* ── Input / form elements ── */
+:root[data-theme='light'] input:not([type='checkbox']):not([type='radio']),
+:root[data-theme='light'] select,
+:root[data-theme='light'] textarea {
+  background: var(--bg-inner);
+  border-color: var(--border-card);
+  color: var(--text-main);
+}
+:root[data-theme='light'] input:focus,
+:root[data-theme='light'] select:focus,
+:root[data-theme='light'] textarea:focus {
+  border-color: var(--accent);
+}
+:root[data-theme='light'] input::placeholder,
+:root[data-theme='light'] textarea::placeholder {
+  color: var(--text-dim);
+}
+
+/* ── Dropdown / popover menus ── */
+:root[data-theme='light'] .dropdown-menu,
+:root[data-theme='light'] .popover {
+  background: var(--bg-card);
+  border-color: var(--border-card);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 40, 0.18);
+}
+
+/* ── Scrollbar ── */
+:root[data-theme='light'] ::-webkit-scrollbar-track { background: var(--bg-inner); }
+:root[data-theme='light'] ::-webkit-scrollbar-thumb { background: rgba(0, 0, 40, 0.16); border-radius: 6px; }
+:root[data-theme='light'] ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 40, 0.28); }
 
 *, *::before, *::after {
   box-sizing: border-box;
