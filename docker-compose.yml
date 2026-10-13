@@ -68,7 +68,7 @@ services:
 
   api:
     build:
-      context: ./server
+      context: ./backend
       args:
         INSTALL_EXTRAS: ${INSTALL_EXTRAS:-false}  # true adds sentry-sdk (requirements-extra.txt)
     image: scammind-server:local

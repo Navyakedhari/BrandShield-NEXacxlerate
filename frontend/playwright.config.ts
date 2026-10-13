@@ -1,4 +1,4 @@
-// Playwright smoke tests. They start the REAL backend (server/scripts/e2e_server.py: sample collector, temp SQLite database,
+// Playwright smoke tests. They start the REAL backend (backend/scripts/e2e_server.py: sample collector, temp SQLite database,
 // no Tavily key, no network) and the Vite dev server, then walk every page in a browser.
 // Secrets are generated per run, passed only through the environment of the child processes, and never written to disk or printed.
 import { defineConfig } from '@playwright/test';
@@ -15,7 +15,7 @@ const WEB_PORT = Number(process.env.E2E_WEB_PORT || 5174);
 // This file is also loaded by the test worker: values created by the main process are inherited through the environment, never regenerated.
 const tmp = process.env.E2E_TMP_DIR ?? mkdtempSync(path.join(tmpdir(), 'scammind-e2e-'));
 process.env.E2E_TMP_DIR = tmp;
-const serverDir = path.resolve(here, '..', 'server');
+const serverDir = path.resolve(here, '..', 'backend');
 const python = process.env.E2E_PYTHON || path.join(serverDir, '.venv', process.platform === 'win32' ? 'Scripts/python.exe' : 'bin/python');
 
 // Throwaway credentials for this run only. The tests read them from the environment, so they are never hard-coded or logged.

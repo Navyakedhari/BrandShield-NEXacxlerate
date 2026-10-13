@@ -2,7 +2,7 @@
 
 A collector fetches raw candidates (accounts, pages, apps) from one provider and returns normalized
 `Candidate` objects. The orchestrator runs them in a chain. **A failed source never blocks a scan.**
-Code: `server/app/collectors/`.
+Code: `backend/app/core/collectors/`.
 
 ## How it fits together
 
@@ -50,7 +50,7 @@ the database so it survives restarts and is per calendar month (UTC). Usage repo
 
 ## Fixtures are hand-written
 
-`server/tests/fixtures/` holds **hand-written** responses based on the public API documentation, **not captured from live services**. Nothing in the build or the
+`backend/tests/fixtures/` holds **hand-written** responses based on the public API documentation, **not captured from live services**. Nothing in the build or the
 tests contacts Tavily, Apple or SearXNG (a test guard blocks real network access). After you add keys, capture real responses (below) and replace the fixtures;
 then run `pytest tests/collectors`. Real responses may contain fields not in the fixtures; every field is treated as optional.
 
@@ -58,20 +58,20 @@ then run `pytest tests/collectors`. Real responses may contain fields not in the
 
 | What | Where | Required? |
 |---|---|---|
-| `TAVILY_API_KEY` | `server/.env` | Yes for live social search. Without it live mode reports Tavily as `no_key` and auto mode stays on sample |
-| `TAVILY_MONTHLY_BUDGET`, `TAVILY_MAX_QUERIES_PER_SCAN`, `TAVILY_SEARCH_DEPTH` | `server/.env` | No (defaults 900, 12, basic) |
-| `SEARXNG_BASE_URL` (+ `SEARXNG_ALLOW_PRIVATE_HOSTS=true` if it is on a private network) | `server/.env` | No, optional fallback; the instance must enable `json` format |
-| `ITUNES_COUNTRY` (default `in`) | `server/.env` | No |
+| `TAVILY_API_KEY` | `backend/.env` | Yes for live social search. Without it live mode reports Tavily as `no_key` and auto mode stays on sample |
+| `TAVILY_MONTHLY_BUDGET`, `TAVILY_MAX_QUERIES_PER_SCAN`, `TAVILY_SEARCH_DEPTH` | `backend/.env` | No (defaults 900, 12, basic) |
+| `SEARXNG_BASE_URL` (+ `SEARXNG_ALLOW_PRIVATE_HOSTS=true` if it is on a private network) | `backend/.env` | No, optional fallback; the instance must enable `json` format |
+| `ITUNES_COUNTRY` (default `in`) | `backend/.env` | No |
 | `google-play-scraper` package | `pip install` in the venv | No, optional; **license unverified**, see `docs/DEPENDENCIES.md` before installing |
 
-Restart the server after editing `.env`. Names only are in `server/.env.example`; never commit `.env`.
+Restart the server after editing `.env`. Names only are in `backend/.env.example`; never commit `.env`.
 
 ## First live check (run it yourself)
 
 The build did not run this. It sends **one** Tavily search (1 credit) and prints the status without printing the key.
 
 ```powershell
-cd server
+cd backend
 .\.venv\Scripts\python -m alembic upgrade head                      # once, so the credit counter can be stored
 .\.venv\Scripts\python -m scripts.live_check                        # status only
 .\.venv\Scripts\python -m scripts.live_check --save tavily_real.json   # also keep the raw response to use as a fixture

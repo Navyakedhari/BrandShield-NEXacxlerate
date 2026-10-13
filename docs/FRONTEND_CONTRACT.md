@@ -398,7 +398,7 @@ Store `auditLog` (`AuditLogItem {id,user,action,target,time}`) written by `addAu
 
 ---
 
-## 17. Phase 5 status (frontend connected to `server/`)
+## 17. Phase 5 status (frontend connected to `backend/`)
 
 Sections 1 to 16 above describe the frontend **before** Phase 5 (they are kept as the record of what was replaced). This section is the current state.
 The UI (layout, classes, copy, CSS) of the 10 designed pages was kept; only the data wiring changed, plus the additions listed under "New".

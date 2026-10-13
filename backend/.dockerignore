@@ -1,7 +1,20 @@
-.venv
-__pycache__
+# Keep the build context small and free of secrets
+.venv/
+venv/
+__pycache__/
 *.pyc
-data
-tests
+.pytest_cache/
+.ruff_cache/
 .env
-.pytest_cache
+.env.*
+!.env.example
+data/
+*.db
+*.sqlite3
+tests/
+requirements-dev.txt
+README.md
+.git/
+.gitignore
+Dockerfile
+.dockerignore

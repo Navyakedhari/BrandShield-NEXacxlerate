@@ -2,12 +2,12 @@
 
 | # | Decision | Notes |
 |---|---|---|
-| 1 | Rebuild from scratch in `server/` | Old `backend/` (investigations/campaigns product) is untouched and unused. |
-| 2 | Keep old `backend/` and the 9 orphaned frontend pages for now | Revisit later; nothing in `server/` imports them. |
+| 1 | Rebuild from scratch in `backend/` | Old `backend/` (investigations/campaigns product) is untouched and unused. |
+| 2 | Old product backend and the 9 orphaned frontend pages | Deleted; the new FastAPI stack lives in `backend/` (earlier history keeps the old code). |
 | 3 | Real login errors, no offline bypass | Frontend change (LoginPage / RequireAuth) is Phase 5. The API already returns 401 `Incorrect email or password`. |
 | 4 | `/setup` requires admin login first | No public `POST /api/auth/register` is built. The first admin is seeded from `ADMIN_EMAIL` / `ADMIN_PASSWORD`. |
 | 5 | Data mode setting `live \| sample \| auto`, default `auto`, in `settings`, admin-only to change | API.md only lists `live \| sample`; `auto` is an addition. Endpoint comes in a later phase. Records carry `source` = `live` or `sample`. |
-| 6 | Risk bands: 85+ high, 70-84 medium, below 70 low | `app/services/bands.py`. |
+| 6 | Risk bands: 85+ high, 70-84 medium, below 70 low | `app/core/pipeline/bands.py`. |
 | 7 | Audit log and evaluation endpoints are in scope | Audit writer + `GET /api/audit` (+ `export.csv`) in Phase 1; evaluation later. |
 | 8 | One brand per organisation for now | `brands` is still a table; `POST /api/brands` returns 409 if one exists. |
 | 9 | Evidence = SHA-256 of the saved snapshot; screenshots off by default | Stored in `detections.evidence` JSON. |
@@ -24,7 +24,7 @@
 
 ## Phase 2 choices (detection engine, flagged for review)
 
-- Engine lives in `server/app/engine/` with no FastAPI/SQLAlchemy/network imports. It only scores; every detection comes out as `status="pending_review"`.
+- Engine lives in `backend/app/core/engine/` with no FastAPI/SQLAlchemy/network imports. It only scores; every detection comes out as `status="pending_review"`.
 - Allowlist is exact handle / profile URL / package id / App Store id only, checked before scoring. A mirror-site listing (APKPure etc.) of the official package id is NOT official. The brand's exact name never excludes a candidate.
 - Verdicts: `flagged` (impersonation likely), `brand_name` (uses the exact name; may be the brand or an impersonator), `review` (uncertain, human look), `safe`. Only `flagged`/`brand_name` get full name points; `review` gets half.
 - Why "Acme Bakery/Hotels/Weather" are not flagged: a hit needs the full brand token (or one edit of it with every leftover piece explained by known words). Partial matches on the first word are `safe`, or `review` if the rest is an impersonation word ("Acme Support"). A word list of benign trailing words exists only as a supplement (`BrandProfileInput.extra_benign_words`).
@@ -34,7 +34,7 @@
 - Logo thresholds (synthetic shape logos, not real brands): >= 80 likely copy, >= 55 similar, below 55 no points. Colour-inverted logos score ~0. Re-tune on real labelled data.
 - Score model: reasons sum to `raw_total`; per-category caps are applied inside the reasons; the 100 cap is applied last (`capped` flag). Publisher-difference counts only with another brand signal; 22 when the publisher name resembles the brand, else 20.
 - LLM scam-intent check: setting `scam_llm_enabled` (default false); the Anthropic option was removed in E5. Not wired into any endpoint yet.
-- Ruff: `E501` is ignored in `app/engine/*` and `scripts/*` (regex and word tables).
+- Ruff: `E501` is ignored in `app/core/engine/*` and `scripts/*` (regex and word tables).
 
 
 ## Phase 3 choices (collectors, flagged for review)
@@ -51,7 +51,7 @@
 - **Google Play** goes through an optional, lazily imported package (`google-play-scraper`), not installed, not in requirements. It scrapes Play pages (unofficial; terms-of-use risk and license are unverified). Without it the source reports `not_installed`.
 - **Sample collector** carries `source="sample"` on every candidate and `extras.sample_role` (`official_echo`, `lookalike`, `hard_negative`) so tests and the evaluation can check the engine; the role is ground truth, not a score.
 - **Retry endpoint is synchronous** in Phase 3 (returns 202 with the result); Phase 4 makes it a job.
-- **Settings:** `env_ignore_empty=True`, so `NAME=` left blank in `.env` (as in `.env.example`) means "not set" instead of a parse error. Tests ignore `server/.env` and block real network/DNS access.
+- **Settings:** `env_ignore_empty=True`, so `NAME=` left blank in `.env` (as in `.env.example`) means "not set" instead of a parse error. Tests ignore `backend/.env` and block real network/DNS access.
 - Audit actions added: `source.monitor_toggled`, `source.retry`, `settings.data_mode_changed`.
 
 ## Phase 4 choices (scan pipeline, jobs, screens API; flagged for review)
@@ -67,7 +67,7 @@
 - **Scan statuses:** `queued | running | completed | partial | failed` (column `scans.state` keeps its name; the API also returns the old job vocabulary `state: queued|running|done|error`). `partial` = at least one source unavailable or returned partial results. `failed` = an internal crash, or EVERY active source unavailable with nothing (not even cached results) to analyse. A queued/running scan older than `SCAN_STALE_MINUTES` (30) is failed automatically so scans can start again.
 - **One scan per brand:** the second start returns 409 with the running scan (`job_id`, `scan`). Enforced in the application (check then insert), not by a database constraint: two requests in the same millisecond on different servers could both pass. Acceptable for one brand/one API process; revisit with a partial unique index on Postgres.
 - **Evidence:** snapshot = canonical JSON of the candidate (fetch time excluded), stored at `DATA_DIR/evidence/<sha[:2]>/<sha>.json`, so identical content is stored once. The endpoint re-hashes the file and reports `hash_verified`. Screenshots: hook only (`SCREENSHOTS_ENABLED`, Playwright not installed, not tested live).
-- **Logo fetch:** result URLs go through the new `services/image_fetch.py` (same SSRF rules as `url_safety`, plus size/type/magic checks, 25 downloads per scan). Only for live candidates with an icon URL; sample data never triggers a download. Any failure is recorded as "Logo unavailable: <why>" and the candidate continues. Result pages are NOT fetched (no og:image scraping): only the image URL a source supplies.
+- **Logo fetch:** result URLs go through the new `core/pipeline/image_fetch.py` (same SSRF rules as `url_safety`, plus size/type/magic checks, 25 downloads per scan). Only for live candidates with an icon URL; sample data never triggers a download. Any failure is recorded as "Logo unavailable: <why>" and the candidate continues. Result pages are NOT fetched (no og:image scraping): only the image URL a source supplies.
 - **Optional AI text check** runs only when `SCAM_LLM_ENABLED=true` AND the active provider has a key; never for sample data; failures are skipped silently (counted). When enabled without a key the scan records a note.
 
 **Jobs and scheduler**
@@ -94,12 +94,12 @@
 - **Evaluation** is a new route `/evaluation`, linked from Settings > Account, so the designed pages stay as they are.
 - **Source events** are derived from recent scans (no event feed exists).
 - **Refresh tokens:** single-flight per tab; a simultaneous refresh in two tabs can log both out (theft detection of the server). Accepted for now.
-- **Browser tests** use a dedicated launcher (`server/scripts/e2e_server.py`), random per-run credentials passed only through the environment of the child processes, and a temp database; no `server/.env` is read and no network is used.
+- **Browser tests** use a dedicated launcher (`backend/scripts/e2e_server.py`), random per-run credentials passed only through the environment of the child processes, and a temp database; no `backend/.env` is read and no network is used.
 
 
 ## Phase 6 choices (deployment readiness; flagged for review)
 
-- **Old product left on disk, not used.** The root `docker-compose.yml` was replaced with a new one for the new stack (api, worker, db, redis, frontend). The old `backend/` folder and its compose definition were NOT touched or reused; `backend/` stays on disk untouched. Remove it when you are sure nothing is needed.
+- **Old product removed.** The old product backend and its 9 orphaned frontend pages were deleted; the new stack (api, worker, db, redis, frontend) lives in `backend/` and `frontend/`.
 - **Compose layout:** Postgres `17-alpine` (pinned major; migrations were tested on a local PostgreSQL 18.1, not on 17), Redis 7.2 (last BSD-licensed line, see DEPENDENCIES.md) with a password, named volumes `pgdata`, `redisdata`, `scammind-data` (DATA_DIR, shared by api and worker). Secrets are required by `${VAR:?}` (compose refuses to start without POSTGRES_PASSWORD, REDIS_PASSWORD, JWT_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD); no default secrets exist anywhere. Db/redis publish no ports; api and frontend bind to 127.0.0.1 (put a TLS reverse proxy in front for any real use). `docker-compose.dev.yml` (explicit `-f`, not an auto-loaded override, so it cannot slip into production) publishes db/redis on localhost.
 - **Migrations in containers:** `docker-entrypoint.sh api` runs `python -m scripts.migrate` first. The script takes a PostgreSQL advisory lock, so replicas starting together are safe (tested with three concurrent runs on PostgreSQL 18.1). With many replicas set `RUN_MIGRATIONS=false` and run one `migrate` job. The worker never migrates; compose starts it only after the api is healthy.
 - **One scheduler:** the scheduler loop lives in the API process. In compose the worker has `SCHEDULER_ENABLED=false`; if you scale the api, set it to `false` on all replicas but one. (The one-active-scan index now makes a duplicate scan impossible, but extra loops would waste credits checking.)
@@ -117,7 +117,7 @@
 ## Sample logo variants (flagged for review)
 
 - **Why:** sample candidates had no image, so every one reported "logo unavailable", the logo / icon points (up to 28 / 30) were never earned and sample scores topped out near 70.
-- **How:** when the brand has an uploaded logo, the sample collector gives each look-alike and hard negative a GENERATED image (`app/collectors/sample_images.py`): `near_copy` (full-size near-lossless JPEG re-save), `resized`, `recoloured`, `cropped`, or `unrelated` (seeded abstract image). Bytes live in the in-memory field `Candidate.inline_image`; they are never serialized (cache, evidence snapshots). Without an uploaded logo no images are made and "Logo unavailable" stays the honest answer (scores then stay below High).
+- **How:** when the brand has an uploaded logo, the sample collector gives each look-alike and hard negative a GENERATED image (`app/core/collectors/sample_images.py`): `near_copy` (full-size near-lossless JPEG re-save), `resized`, `recoloured`, `cropped`, or `unrelated` (seeded abstract image). Bytes live in the in-memory field `Candidate.inline_image`; they are never serialized (cache, evidence snapshots). Without an uploaded logo no images are made and "Logo unavailable" stays the honest answer (scores then stay below High).
 - **Safety:** the pipeline reads `inline_image` ONLY when `source == "sample"` (`_logo_step`); for every other source the field is ignored and the normal SSRF-safe fetch path runs unchanged, so a live collector cannot smuggle bytes in (tested). No network is used for sample images.
 - **Honesty markers:** `details.logo` carries `origin: "generated_sample"` + `variant` + a note; the evidence snapshot's `extras` has `logo_image: "generated_sample"` and `logo_variant`; the detection source stays `sample`.
 - **Tiers:** look-alikes are `strong` (scam-word name, lure bio, 3-12 day old account, copied logo, scam-page follower pattern), `medium` (edited logo, lure bio, 20-55 days) and `weak` (name only, unrelated picture, old account, neutral bio, stays Low). Hard negatives keep an unrelated image. Apps: strong = APK-mirror copy with `near_copy` icon, different publisher, few installs, new listing; medium = edited icon, few installs; weak = unrelated icon. Scorer weights and bands are UNCHANGED; the only engine-adjacent change is that `Candidate.to_engine` passes `extras["installs_count"]` (an int) as `CandidateApp.installs`.
@@ -136,7 +136,7 @@ Decisions D1 to D13 of `docs/EXTENSION_PLAN.md` as answered by the owner, and wh
 - **D2 RapidFuzz** only as an additional signal for domains, and only when the home-grown matcher said `safe`, so no existing verdict moves and hard negatives such as "Acme Bakery" stay clean. `name_match.py` is unchanged.
 - **D8 web category.** `category=web`, `type=lookalike_domain`, `platform=web`, one detection per normalized host. The candidate gate: the domain resembles the brand (name matcher verdict not safe, deceptive subdomain, IDN homograph or RapidFuzz). Domains are compared by registrable domain (tldextract's bundled Public Suffix List snapshot, `suffix_list_urls=()`, no cache dir, no runtime network). A TLD missing from the snapshot (`.test`, new gTLDs) is treated as a one-label suffix. Raw IP hosts (also decimal, hex and octal forms) are recognised and not compared. The UI has no Web list yet (E9); web rows count in the Dashboard totals and in the API.
 - **Sample web candidates** use the reserved `.test` TLD only, so no real website is implied; they are labelled `synthetic` and never sent to Google. The sample scan now has web candidates: tests that counted sample rows were updated (official excluded 3 -> 4, category split).
-- **D11 Safe Browsing.** Lookup API **v4** `threatMatches:find` (read on developers.google.com/safe-browsing/v4/lookup-api on 2026-10-14: POST, body `client` + `threatInfo`, max 500 URLs per request, `matches` or `{}`). I could not confirm which version Google recommends for new work, so the adapter is isolated in `app/providers/safe_browsing.py` and can be swapped (v5, or Web Risk for a commercial product). Non-commercial use only. The key travels in the `x-goog-api-key` header, never in the URL. Verdicts: match / clean / unknown / failed (table in API.md 20.3); `clean` means "no match in Google's lists, not a safety guarantee". Only candidates that already resemble the brand are sent, in one batch per scan (500 per request), at most 100 per scan. The per-day request budget (default 5000) is OUR limit because the Google pages used here give no quota number. 429 handling: wait for `Retry-After` (default 1 h) and report `unknown`. A scan never fails or turns `partial` because of Safe Browsing; the effect is visible in scan `counts` and in `GET /api/sources` > `reputation`.
+- **D11 Safe Browsing.** Lookup API **v4** `threatMatches:find` (read on developers.google.com/safe-browsing/v4/lookup-api on 2026-10-14: POST, body `client` + `threatInfo`, max 500 URLs per request, `matches` or `{}`). I could not confirm which version Google recommends for new work, so the adapter is isolated in `app/core/providers/safe_browsing.py` and can be swapped (v5, or Web Risk for a commercial product). Non-commercial use only. The key travels in the `x-goog-api-key` header, never in the URL. Verdicts: match / clean / unknown / failed (table in API.md 20.3); `clean` means "no match in Google's lists, not a safety guarantee". Only candidates that already resemble the brand are sent, in one batch per scan (500 per request), at most 100 per scan. The per-day request budget (default 5000) is OUR limit because the Google pages used here give no quota number. 429 handling: wait for `Retry-After` (default 1 h) and report `unknown`. A scan never fails or turns `partial` because of Safe Browsing; the effect is visible in scan `counts` and in `GET /api/sources` > `reputation`.
 - **Candidate URLs are never visited.** Safe Browsing receives the URL; reachability and logo fetch are not run for web candidates; a test makes any other outbound request fail.
 - **D3 (defect).** `official_apps.store_id` (optional numeric App Store id, accepted as number, `id123...` or URL; API only, no UI field yet) plus per-scan learning: when the iTunes listing is matched by its official bundle id, its numeric id is used to exclude the copy that arrives with only the numeric id. The registry itself is never changed automatically. Learning runs before de-duplication because the two copies share one URL and merge.
 - **D4 (defect, small).** The same package id with a store it does not have yet adds the store (201) instead of answering 409.

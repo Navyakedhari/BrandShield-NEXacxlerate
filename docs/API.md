@@ -393,7 +393,7 @@ Query `limit=5`.
 ```
 (In this object `source` is the platform slug, so the sample/live marker is named `data_source`.) Keep separate from the user audit log (section 12).
 
-### Phase 3 implementation notes (collectors; implemented in `server/app/api/sources.py`)
+### Phase 3 implementation notes (collectors; implemented in `backend/app/api/sources.py`)
 
 These endpoints exist now. Where this differs from the proposal above, **this section wins**.
 
@@ -659,7 +659,7 @@ Not present at all: accounts, official apps, logo upload, detections review acti
 
 ## 18. Phase 4 implementation notes (authoritative)
 
-Implemented in `server/app/api/{scans,detections,dashboard,lookalike,settings,reports,evaluation}.py`, logic in `server/app/services/`. Where this section differs from sections 6 to 14 above, **this section wins**. Roles: `viewer` = GET and pure computations only; `analyst` = scans, detection actions, reports, running look-alike cases/evaluation; `admin` = also settings, data mode, adding/removing look-alike cases. Every error is `{"detail": ...}`. Nothing here ever sends a takedown, report, email or webhook: humans approve, the system records.
+Implemented in `backend/app/api/{scans,detections,dashboard,lookalike,settings,reports,evaluation}.py`, logic in `backend/app/services/`. Where this section differs from sections 6 to 14 above, **this section wins**. Roles: `viewer` = GET and pure computations only; `analyst` = scans, detection actions, reports, running look-alike cases/evaluation; `admin` = also settings, data mode, adding/removing look-alike cases. Every error is `{"detail": ...}`. Nothing here ever sends a takedown, report, email or webhook: humans approve, the system records.
 
 ### 18.1 Conventions added in Phase 4
 - `brand_id` is optional everywhere and defaults to the single brand (404 `No brand profile yet...` when none exists).
@@ -923,7 +923,7 @@ Created as **DRAFT**; a person approves; nothing is sent anywhere. Formats `csv`
 
 - `GET /api/lookalike/test-cases` seeding race fixed: the 12 default cases are seeded under a process lock (two requests arriving together, such as React StrictMode in development, used to create 24 cases). Single API process only; with several processes a unique index is still needed.
 - There is still no `GET /api/sources/events`. The UI builds "Recent source events" from `GET /api/scans` (`source_report`).
-- `server/scripts/e2e_server.py` starts the API for the browser tests: temp SQLite, `Settings(_env_file=None)`, sample collector, stubbed URL checker (no network). Not for production.
+- `backend/scripts/e2e_server.py` starts the API for the browser tests: temp SQLite, `Settings(_env_file=None)`, sample collector, stubbed URL checker (no network). Not for production.
 
 
 ## 19. Phase 6: health, readiness and canary (authoritative for these endpoints)
@@ -1025,7 +1025,7 @@ Writers = analyst or admin. Viewers get 403 on every write.
 - `POST /api/candidates/social|app|web` (JSON, strict schema) and `POST /api/candidates/import?kind=social|app|web&format=csv|json&dry_run=false` (multipart `file`). Columns: social `platform,handle,display_name,url,bio,followers,following,posts,created_at,verified,image_id`; app `store,package_id,name,publisher,publisher_id,url,description,installs,rating_count,image_id`; web `url,title,note`. Unknown columns/fields are refused. Limits: `IMPORT_MAX_BYTES` (1 MB, 413), `IMPORT_MAX_ROWS` (500, 413), UTF-8 (BOM allowed) or UTF-16 with BOM, else 422.
 - Response: `{dry_run, total, accepted, rejected, duplicates, created, updated, official, results: [{row, status: created|updated|cleared|official|not_flagged|duplicate|error|valid, detection_id, score, severity, message}]}`. Valid rows are saved even when others fail. A dry run validates only.
 - Rows use the same pipeline as a scan (allowlist first, then scoring, then the de-duplicating upsert on `canonical_key`). Detections carry `origin`: `scan | manual | import | synthetic` (`source` stays `live | sample`). URLs in rows are never opened; logo comparison uses only an uploaded `image_id`. Free text is cleaned (control characters removed, a leading `= + - @` gets a `'` prefix) and stored as inert text.
-- Authorized provider interface (stub only, no access claimed): `app/providers/authorized.py`.
+- Authorized provider interface (stub only, no access claimed): `app/core/providers/authorized.py`.
 
 ### 21.5 Migration 0006
 `brands.description/archived_at`, `detections.origin` (back-filled: sample rows `synthetic`), tables `brand_logos`, `brand_publishers`, `asset_verifications`, `candidate_images`, `text_analysis_cache`.

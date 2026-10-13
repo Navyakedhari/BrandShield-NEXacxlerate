@@ -17,7 +17,7 @@ import { sm } from '../api/sm';
 import type { Brand } from '../api/types';
 import { refreshBrand, setBrandCache, useBrand } from '../hooks/useBrand';
 import { useMe } from '../hooks/useMe';
-import { checkLogoFile } from '../lib/logoCheck';
+import { checkLogoFile } from '../utils/logoCheck';
 import './BrandProfilePage.css';
 
 const ACCOUNT_PLATFORMS: { value: string; label: string }[] = [

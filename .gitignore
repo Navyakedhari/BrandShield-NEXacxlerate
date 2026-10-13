@@ -1,67 +1,51 @@
-# Logs
+# OS / editors
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.sw?
+
+# logs
 logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
+# secrets and local config (never commit)
+.env
+.env.*
+*.env
+!.env.example
+!backend/.env.example
+!frontend/.env.example
+
+# backend
+backend/.venv/
+backend/data/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+*.db
+*.sqlite3
+
+# frontend
 node_modules
 dist
 dist-ssr
 *.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# backend
-backend/data/
-backend/.env
-backend/.venv/
-__pycache__/
-.pytest_cache/
-*.pyc
-frontend/node_modules/
-frontend/dist/
-
-# server (Phase 1+)
-.env
-server/.env
-server/.venv/
-server/data/
-*.db
-*.sqlite3
-.ruff_cache/
-
-# frontend test artifacts (Phase 5)
-frontend/test-results/
-frontend/playwright-report/
+*.tsbuildinfo
+frontend/coverage/
 frontend/e2e/.artifacts/
 frontend/e2e/screenshots/
-frontend/coverage/
 
-# deployment (Phase 6)
-.env.*
-!.env.example
-!server/.env.example
-*.env
+# test output
+playwright-report/
+test-results/
+
+# docker
 pgdata/
 redisdata/
 docker-compose.override.yml
-playwright-report/
-test-results/
-frontend/.env
-frontend/.env.*
-!frontend/.env.example
-.mypy_cache/
-.coverage
-htmlcov/

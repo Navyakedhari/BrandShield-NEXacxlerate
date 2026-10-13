@@ -8,7 +8,7 @@ import { sm } from '../api/sm';
 import { ErrorBox, Loading, Notice } from '../components/common/States';
 import { useApi } from '../hooks/useApi';
 import { refreshBrand, setBrandCache, useBrand } from '../hooks/useBrand';
-import { checkLogoFile } from '../lib/logoCheck';
+import { checkLogoFile } from '../utils/logoCheck';
 import './SetupPage.css';
 
 export const SetupPage: React.FC = () => {

@@ -25,10 +25,10 @@ The app is single-tenant: one workspace, one active brand, no organisation colum
 - Fetches the app does make (official account/URL checks, image fetch, snapshots) go through `url_safety` / `SafeFetcher`: http(s) only, DNS resolved and private, loopback, link-local and metadata addresses refused, redirects re-checked, size and time caps. Tests run with live network blocked.
 
 ## Prompt injection
-Candidate text (bios, descriptions) goes to the optional hosted model only as quoted data under a fixed instruction; the reply must match a strict JSON schema; the output can only raise a score by a bounded amount and never triggers an action. It is labelled "an opinion, not evidence". Regression tests are in `tests/test_text_providers.py`. This reduces, but cannot remove, the chance that a hostile bio skews an opinion; a person confirms every detection.
+Candidate text (bios, descriptions) goes to the optional hosted model only as quoted data under a fixed instruction; the reply must match a strict JSON schema; the output can only raise a score by a bounded amount and never triggers an action. It is labelled "an opinion, not evidence". Regression tests are in `tests/core/providers/test_text_providers.py`. This reduces, but cannot remove, the chance that a hostile bio skews an opinion; a person confirms every detection.
 
 ## Secrets
-Keys (`GEMINI_API_KEY`, `HUGGINGFACE_API_TOKEN`, `GOOGLE_SAFE_BROWSING_API_KEY`, `TAVILY_API_KEY`, `SENTRY_DSN`, `JWT_SECRET`) are read from the environment or the untracked `server/.env`. They are redacted from logs, never returned by any endpoint (`GET /api/providers` says configured yes/no only) and never stored in the database. Never commit `.env`.
+Keys (`GEMINI_API_KEY`, `HUGGINGFACE_API_TOKEN`, `GOOGLE_SAFE_BROWSING_API_KEY`, `TAVILY_API_KEY`, `SENTRY_DSN`, `JWT_SECRET`) are read from the environment or the untracked `backend/.env`. They are redacted from logs, never returned by any endpoint (`GET /api/providers` says configured yes/no only) and never stored in the database. Never commit `.env`.
 
 ## Uploads and imports
 - Images: PNG/JPEG/WebP by magic bytes, size and pixel caps, decompression-bomb guard, re-encoded (metadata dropped), stored under a hash name; the original filename is never used; served with a fixed type and `nosniff`.

@@ -1,6 +1,0 @@
-# Optional extras. Not needed to run or test the server; each one is switched on by an environment variable.
-# Install with:  pip install -r requirements-extra.txt
-sentry-sdk>=2.0,<3   # MIT. Error reporting when SENTRY_DSN is set (app/core/observability.py scrubs before sending)
-ImageHash>=4.3,<5   # BSD-2-Clause. Second image-similarity implementation (phash/dhash/whash) beside the home-grown one; OPTIONAL (IMAGE_SIMILARITY_BACKEND=imagehash). Pulls numpy, scipy, PyWavelets (about 200 MB installed); the default code needs none of them.
-google-genai>=2.30,<3   # Apache-2.0. Gemini text provider (SCAM_LLM_PROVIDER=gemini); lazily imported, key from GEMINI_API_KEY
-huggingface_hub>=2.2,<3   # Apache-2.0. Optional Hugging Face text provider; lazily imported, needs HUGGINGFACE_API_TOKEN and HUGGINGFACE_MODEL

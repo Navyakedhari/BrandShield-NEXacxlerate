@@ -51,13 +51,13 @@ Open **PowerShell** in the project folder.
 **Step 1. Server (the API)**
 
 ```powershell
-cd server
+cd backend
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements-dev.txt
 copy .env.example .env
 ```
 
-Open `server\.env` in Notepad and fill in three values:
+Open `backend\.env` in Notepad and fill in three values:
 
 | Name | What to put | Example |
 |---|---|---|
@@ -90,8 +90,8 @@ Open **<http://localhost:5173>** in your browser. Use exactly `localhost`, not `
 
 **Good to know**
 
-* After you edit `server\.env` you must **stop the API (Ctrl+C) and start it again**. The file is only read at start.
-* Your data lives in `server\data\` (the database `scammind.db`, logos, evidence snapshots, report files). Back this folder up.
+* After you edit `backend\.env` you must **stop the API (Ctrl+C) and start it again**. The file is only read at start.
+* Your data lives in `backend\data\` (the database `scammind.db`, logos, evidence snapshots, report files). Back this folder up.
 * The API's own documentation page is <http://127.0.0.1:8000/docs>.
 * Optional self-check that proves the detection logic still works: `.\.venv\Scripts\python -m scripts.canary` (prints PASS lines, takes a fraction of a second, makes no network calls).
 
@@ -102,7 +102,7 @@ Open **<http://localhost:5173>** in your browser. Use exactly `localhost`, not `
 ![Sign in page](img/01-login.png)
 
 1. Open <http://localhost:5173>. You land on **Sign in**.
-2. Type the `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `server\.env`.
+2. Type the `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `backend\.env`.
 3. Leave **Keep me signed in on this device** ticked if this is your own computer. Untick it on a shared one: the session then ends when you close the tab.
 4. Press **Sign in**.
 
@@ -124,7 +124,7 @@ To leave: click your name (top right) and choose **Sign out**.
 | **analyst** | Everything a viewer can, plus run scans, edit the brand profile, review detections, make reports, run the Look-alike test cases. |
 | **admin** | Everything an analyst can, plus Settings, the data mode, the Look-alike test-case list, health details. |
 
-The first admin is created from `server\.env`. **The app has no screen to add other users** yet; ask your developer to add them.
+The first admin is created from `backend\.env`. **The app has no screen to add other users** yet; ask your developer to add them.
 "Forgot password?" is not available: ask the administrator.
 
 ---
@@ -420,7 +420,7 @@ Three switches (e-mail alerts, weekly digest, Slack or other webhook). The page 
 
 **Re-run evaluation** recomputes it.
 
-There is also an optional "AI text check" for scam wording in bios. It is **off** by default and has no switch in the website: it needs `SCAM_LLM_ENABLED=true` and a `GEMINI_API_KEY` in `server\.env` (see the AI text providers section), is never used on sample data, and the app works fully without it.
+There is also an optional "AI text check" for scam wording in bios. It is **off** by default and has no switch in the website: it needs `SCAM_LLM_ENABLED=true` and a `GEMINI_API_KEY` in `backend\.env` (see the AI text providers section), is never used on sample data, and the app works fully without it.
 
 ---
 
@@ -490,7 +490,7 @@ Set it in **Settings > Account > Data mode** (admin).
 
 Sample and live records are kept apart: switching mode changes which set you see; nothing is deleted.
 
-To go live: put `TAVILY_API_KEY=...` in `server\.env`, restart the API, choose **Live**, and run a scan.
+To go live: put `TAVILY_API_KEY=...` in `backend\.env`, restart the API, choose **Live**, and run a scan.
 To make sure nothing real is ever contacted, choose **Sample**.
 
 The **Sample data** badge appears in the header whenever the data is sample, and is absent in live mode.
@@ -508,7 +508,7 @@ Real web searches cost **credits** at Tavily. One normal ("basic") search costs 
 * Things that do not: Sample mode, the Look-alike Lab, reports, a rejected key (401), a blocked call.
 * iTunes search needs no key and no credits (about 20 calls a minute; a scan takes 20 seconds or so for it).
 
-To save credits: lower `TAVILY_MAX_QUERIES_PER_SCAN` (for example 8), set the schedule to Daily or turn the scheduler off (`SCHEDULER_ENABLED=false`), and keep aliases few. Edit `server\.env` and restart the API.
+To save credits: lower `TAVILY_MAX_QUERIES_PER_SCAN` (for example 8), set the schedule to Daily or turn the scheduler off (`SCHEDULER_ENABLED=false`), and keep aliases few. Edit `backend\.env` and restart the API.
 
 ---
 
@@ -518,7 +518,7 @@ Look at **Source Health**: the row says why in plain words. Common ones:
 
 | Message | What to do |
 |---|---|
-| "Tavily rejected the API key (401)." | Check `TAVILY_API_KEY` in `server\.env`, then restart the API. |
+| "Tavily rejected the API key (401)." | Check `TAVILY_API_KEY` in `backend\.env`, then restart the API. |
 | "Tavily monthly budget reached ... No call was made." | Wait for next month, or raise `TAVILY_MONTHLY_BUDGET` if your plan allows. |
 | "Tavily is rate limiting requests (429)" / "usage limit reached (432/433)" | Wait, or upgrade the plan. The app waits by itself. |
 | "Tavily could not be reached" / "did not answer in time" | Network problem. It retries by itself. |
@@ -565,7 +565,7 @@ A scan that ends as **partial** means "some sources were slow or down": the mess
 | Problem | Cause and fix |
 |---|---|
 | **"Cannot reach the server"** at sign-in | The API is not running (start it: `.\.venv\Scripts\python -m uvicorn app.main:create_app --factory --port 8000`), or the website points at the wrong address. The website calls `http://127.0.0.1:8000` by default; set `VITE_API_URL` if your API is elsewhere, then restart `npm run dev`. |
-| Works at `localhost:5173` but not at `127.0.0.1:5173` | **CORS.** The API only accepts the website addresses in `CORS_ORIGINS` (default `http://localhost:5173`). `localhost` and `127.0.0.1` are different to the browser. Always open the site at `http://localhost:5173`, or add the other address to `CORS_ORIGINS` in `server\.env` (comma separated) and restart the API. |
+| Works at `localhost:5173` but not at `127.0.0.1:5173` | **CORS.** The API only accepts the website addresses in `CORS_ORIGINS` (default `http://localhost:5173`). `localhost` and `127.0.0.1` are different to the browser. Always open the site at `http://localhost:5173`, or add the other address to `CORS_ORIGINS` in `backend\.env` (comma separated) and restart the API. |
 | Blank white page | Open the browser console (F12). Usually the API is down (see above) or an old tab with a stale session: clear site data for `localhost:5173` and sign in again. |
 | The page says "No brand profile yet" and the console shows two 404s | Normal before a brand exists. Create the brand. |
 | `npm run dev` says the port is in use | Another copy is running. Close it, or use `npx vite --port 5175` and add that origin to `CORS_ORIGINS`. |
@@ -641,7 +641,7 @@ Server logs are printed in the API window (JSON lines, secrets removed). The fir
 These features are API-level in this release (no new screens yet). Use the interactive docs at `http://127.0.0.1:8000/docs` or `curl` with your login token.
 
 ### AI text provider setup (optional)
-1. Gemini: create a key at https://aistudio.google.com/apikey, then put `GEMINI_API_KEY=...` and `SCAM_LLM_ENABLED=true` in `server\.env` (never share or commit the file). Optional: `GEMINI_MODEL` (default `gemini-3.5-flash-lite`; check that the id is available to your key). Install the package: `pip install -r requirements-extra.txt`. Restart the API.
+1. Gemini: create a key at https://aistudio.google.com/apikey, then put `GEMINI_API_KEY=...` and `SCAM_LLM_ENABLED=true` in `backend\.env` (never share or commit the file). Optional: `GEMINI_MODEL` (default `gemini-3.5-flash-lite`; check that the id is available to your key). Install the package: `pip install -r requirements-extra.txt`. Restart the API.
 2. Hugging Face (optional): create a fine-grained token with the "Make calls to Inference Providers" permission, set `HUGGINGFACE_API_TOKEN` and `HUGGINGFACE_MODEL` (a model a provider currently serves; there is no default), then choose it: `PUT /api/providers/active` with `{"provider": "huggingface"}` (admin).
 3. Check: `GET /api/providers` shows `configured: true/false` per provider (never the key). Quick test without a scan, run in `server` with the variable set in that shell: `python -c "import os; from app.providers.text import TextRequest; from app.providers.text.gemini import GeminiTextProvider as G; print(G(api_key=os.environ['GEMINI_API_KEY'], model='gemini-3.5-flash-lite').analyze(TextRequest('bio','Official Acme Bank support: complete your KYC now or your account is blocked')).to_dict())"`
 4. The assessment is an opinion labelled "API-generated"; it can only add capped points and never overrides the official list. Without a key the local text check still runs and the AI signal shows "unavailable". (Not run against the live services in this release: only mocked tests.)

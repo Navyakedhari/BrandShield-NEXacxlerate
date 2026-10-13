@@ -2,13 +2,13 @@
 
 Date: 2026-10-13. Everything below was run on the authoring machine (Windows 11, Python 3.12.7, Node 24, PostgreSQL 18.1 started as a
 throwaway local cluster on port 55432 with trust auth, deleted afterwards). **Not run anywhere:** Docker builds, `docker compose config`,
-hadolint, GitHub Actions, Python 3.11, a real Redis server/RQ worker, any live third-party API. Numbers are copied from the actual runs.
+hadolint, GitHub Actions, Python 3.11, a real Redis backend/RQ worker, any live third-party API. Numbers are copied from the actual runs.
 
 ## (a) All tests pass
 
 | Check | Command | Result |
 |---|---|---|
-| Server, SQLite | `cd server; python -m pytest -q` | **819 passed, 5 skipped** (the 5 skipped are PostgreSQL-only tests, skipped without `TEST_DATABASE_URL`). Phase 5 had 768; Phase 6 added 56 server tests. |
+| Server, SQLite | `cd backend; python -m pytest -q` | **819 passed, 5 skipped** (the 5 skipped are PostgreSQL-only tests, skipped without `TEST_DATABASE_URL`). Phase 5 had 768; Phase 6 added 56 server tests. |
 | Server, real PostgreSQL 18.1 | `TEST_DATABASE_URL=postgresql+psycopg://...; python -m pytest -q` | **824 passed, 0 skipped** in 281 s (same suite, every in-memory test engine became its own schema; the 5 PostgreSQL-only tests run too) |
 | Lint, server | `python -m ruff check .` | All checks passed |
 | Frontend unit | `npm test` (Vitest) | 62 passed in 7 files (3 new for the runtime API URL) |
@@ -26,7 +26,7 @@ real Redis/RQ (`check_worker` and `check_redis` are tested against fakes only), 
 
 ## (b) The 10 required name cases (brand "Acme Bank")
 
-`server/tests/engine/test_name_match.py`: all 10 pass.
+`backend/tests/core/engine/test_name_match.py`: all 10 pass.
 
 | Candidate | Expected | Test id |
 |---|---|---|
@@ -41,24 +41,24 @@ real Redis/RQ (`check_worker` and `check_redis` are tested against fakes only), 
 | Acme Hotels | not flagged | `test_required_not_flagged[Acme Hotels]` |
 | Acme Weather | not flagged | `test_required_not_flagged[Acme Weather]` |
 
-The same 12 cases also run end-to-end through the Look-alike runner (`tests/test_screens_api.py`, `DEFAULT_CASES` in `services/lookalike.py`).
+The same 12 cases also run end-to-end through the Look-alike runner (`tests/api/test_screens_api.py`, `DEFAULT_CASES` in `core/pipeline/lookalike.py`).
 
 ## (c) Official assets never appear in any detection list
 
-- `tests/test_scan_flow.py::test_official_assets_never_listed_and_are_excluded` (detections with every filter, marked_official, false-positives, dashboard rows, excluded list)
-- `tests/test_scan_pipeline.py::test_allowlist_is_exact_not_by_name`, `::test_adding_official_account_closes_existing_detection`
-- `tests/engine/test_scoring_pipeline.py::test_allowlist_official_assets_never_produce_a_result`
-- `tests/collectors/test_base_sample.py::test_sample_engine_proof_official_excluded_lookalikes_flagged_negatives_not`
-- New in Phase 6: `tests/test_canary.py::test_full_sample_scan_finds_canary_lookalike_and_excludes_canary_official` and the canary's `official_assets_excluded` check, which fails if the allowlist regresses (`test_canary_fails_when_allowlist_regresses`).
+- `tests/core/pipeline/test_scan_flow.py::test_official_assets_never_listed_and_are_excluded` (detections with every filter, marked_official, false-positives, dashboard rows, excluded list)
+- `tests/core/pipeline/test_scan_pipeline.py::test_allowlist_is_exact_not_by_name`, `::test_adding_official_account_closes_existing_detection`
+- `tests/core/engine/test_scoring_pipeline.py::test_allowlist_official_assets_never_produce_a_result`
+- `tests/core/collectors/test_base_sample.py::test_sample_engine_proof_official_excluded_lookalikes_flagged_negatives_not`
+- New in Phase 6: `tests/services/test_canary.py::test_full_sample_scan_finds_canary_lookalike_and_excludes_canary_official` and the canary's `official_assets_excluded` check, which fails if the allowlist regresses (`test_canary_fails_when_allowlist_regresses`).
 
 ## (d) A failed source never breaks a scan
 
-- `tests/test_scan_pipeline.py::test_failed_source_gives_partial_scan_and_keeps_other_results`
-- `tests/test_scan_pipeline.py::test_every_source_unavailable_is_failed_with_clear_message` (the only case that ends `failed`: nothing at all to analyse, with a clear message)
-- `tests/collectors/test_selection_orchestrator.py::test_failing_collector_does_not_stop_the_others_and_status_is_recorded`
-- `tests/collectors/test_selection_orchestrator.py::test_cached_results_served_with_age_when_source_goes_down_and_backoff_applies`
-- `tests/test_scan_pipeline.py::test_scan_crash_is_recorded_as_failed_without_secrets`
-- Phase 6: a failing collector state degrades `/health` but never makes it `down` (`tests/test_health_readiness.py::test_collectors_live_with_key_ok_then_stored_failure_degrades_without_leaks`, `::test_all_live_collectors_failing_still_not_down`).
+- `tests/core/pipeline/test_scan_pipeline.py::test_failed_source_gives_partial_scan_and_keeps_other_results`
+- `tests/core/pipeline/test_scan_pipeline.py::test_every_source_unavailable_is_failed_with_clear_message` (the only case that ends `failed`: nothing at all to analyse, with a clear message)
+- `tests/core/collectors/test_selection_orchestrator.py::test_failing_collector_does_not_stop_the_others_and_status_is_recorded`
+- `tests/core/collectors/test_selection_orchestrator.py::test_cached_results_served_with_age_when_source_goes_down_and_backoff_applies`
+- `tests/core/pipeline/test_scan_pipeline.py::test_scan_crash_is_recorded_as_failed_without_secrets`
+- Phase 6: a failing collector state degrades `/health` but never makes it `down` (`tests/api/test_health_readiness.py::test_collectors_live_with_key_ok_then_stored_failure_degrades_without_leaks`, `::test_all_live_collectors_failing_still_not_down`).
 
 ## (e) Frontend matches the PDF design: PARTIALLY VERIFIED
 
@@ -86,7 +86,7 @@ without it. The evidence that exists is about how the work was done, not a measu
 - The detection engine (normalisation, edit distance, name matching, scoring, logo similarity), collectors, pipeline and health/canary code were written independently in this repository; every algorithm has its own tests and decisions are recorded in `docs/DECISIONS.md`.
 - Package choices and licenses are recorded in `docs/DEPENDENCIES.md`; third-party code enters only through declared dependencies.
 - Phase 6 code (health, canary, Sentry hook, migration 0004, Docker, CI, README) was written from the task text alone.
-If a hard guarantee is required, someone who has the ZIP should run a similarity tool (for example a token-based clone detector) against `server/` and `frontend/src/`; that has NOT been done.
+If a hard guarantee is required, someone who has the ZIP should run a similarity tool (for example a token-based clone detector) against `backend/` and `frontend/src/`; that has NOT been done.
 
 ## Items not satisfied or open
 

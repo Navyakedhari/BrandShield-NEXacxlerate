@@ -9,8 +9,8 @@ import type { DetectionRow, DetectionType, Report } from '../api/types';
 import { useApi } from '../hooks/useApi';
 import { useBrand } from '../hooks/useBrand';
 import { useMe } from '../hooks/useMe';
-import { bounds, rangeFor, rangeLabel, rangeText } from '../lib/dates';
-import type { RangeKey } from '../lib/dates';
+import { bounds, rangeFor, rangeLabel, rangeText } from '../utils/dates';
+import type { RangeKey } from '../utils/dates';
 import './ReportsPage.css';
 
 type StatusFilter = 'all' | 'new' | 'reviewing' | 'confirmed';

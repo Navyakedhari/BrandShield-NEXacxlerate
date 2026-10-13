@@ -5,11 +5,10 @@ sources for look-alike social profiles and fake apps, scores every suspect with 
 and prepares evidence-backed reports. **A person reviews every detection and approves every report; nothing is ever sent or taken down
 automatically.**
 
-* `server/` FastAPI + SQLAlchemy 2 + Alembic API, detection engine, collectors, RQ worker (this is the product backend)
+* `backend/` FastAPI + SQLAlchemy 2 + Alembic API, detection engine, collectors, RQ worker (this is the product backend)
 * `frontend/` React + TypeScript + Vite app (10 screens + evaluation view)
 * `docs/` decisions, API contract, collectors, dependencies and licenses, Definition-of-Done audit
 * **[User guide](docs/USER_GUIDE.md)**: install, sign in, every page with sample inputs, scoring, credits and troubleshooting (written for non-developers as well as the operator). What is verified on real data and what is not: **[docs/FEATURE_STATUS.md](docs/FEATURE_STATUS.md)**.
-* `backend/` an **older product's** API, kept on disk untouched and **not used** by anything above (see `docs/DECISIONS.md`)
 
 ## Architecture
 
@@ -45,10 +44,10 @@ Needs Python 3.11+ and Node 22+. SQLite is used by default (no database to insta
 
 ```powershell
 # 1. server  (Windows PowerShell; on Linux/macOS use python3 -m venv .venv && source .venv/bin/activate)
-cd server
+cd backend
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements-dev.txt
-copy .env.example .env          # then edit server/.env (see "First run")
+copy .env.example .env          # then edit backend/.env (see "First run")
 .\.venv\Scripts\python -m scripts.migrate
 .\.venv\Scripts\python -m uvicorn app.main:create_app --factory --reload --port 8000
 
@@ -58,7 +57,7 @@ npm install
 npm run dev                     # http://localhost:5173
 ```
 
-Sign in with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `server/.env`, open `/setup` to create the brand, then run a scan.
+Sign in with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `backend/.env`, open `/setup` to create the brand, then run a scan.
 With no live source configured the app is in **sample mode**: detections are fictional, every page shows a "Sample data" badge, and nothing
 contacts a real platform. (The server also reads a root `.env` if present; do not put the Docker `.env` values there for a non-Docker run.)
 
@@ -82,17 +81,17 @@ the worker starts after the api is healthy. For local development with db/redis 
 and migration script were exercised directly against PostgreSQL 18.1; the images, nginx template and compose file were not. Expect to fix
 small things on the first `docker compose up --build`, and tell us what broke.
 
-## Environment variables (names only; set them in `server/.env` or `.env`)
+## Environment variables (names only; set them in `backend/.env` or `.env`)
 
-Server (`server/app/core/config.py`; names are case-insensitive, blank = not set):
+Server (`backend/app/config/config.py`; names are case-insensitive, blank = not set):
 
 | Name | Required | Default | Purpose |
 |---|---|---|---|
 | `JWT_SECRET` | **yes** (16+ chars) | none | Signs access/refresh tokens. Generate with `python -c "import secrets; print(secrets.token_urlsafe(48))"`. Changing it signs everyone out. |
 | `ADMIN_EMAIL` / `ADMIN_PASSWORD` | yes on first run | none | The first admin is created from these at startup if no such user exists; an existing password is never overwritten. |
 | `ADMIN_NAME` | no | `Administrator` | Display name of that admin. |
-| `DATABASE_URL` | no (yes in production) | SQLite file in `server/data` | `postgresql+psycopg://user:password@host:5432/db` for PostgreSQL. |
-| `DATA_DIR` | no | `server/data` | Logos, evidence snapshots, report files. Must be writable and shared by api and worker. Back it up. |
+| `DATABASE_URL` | no (yes in production) | SQLite file in `backend/data` | `postgresql+psycopg://user:password@host:5432/db` for PostgreSQL. |
+| `DATA_DIR` | no | `backend/data` | Logos, evidence snapshots, report files. Must be writable and shared by api and worker. Back it up. |
 | `APP_ENV` | no | `local` | `local`, `test` or `production`. `production` makes a missing/old migration show as degraded in `/health`; `test` disables the scheduler. |
 | `LOG_LEVEL` | no | `INFO` | JSON logs with secret redaction. |
 | `CORS_ORIGINS` | yes in production | `http://localhost:5173` | Comma-separated browser origins allowed to call the API (your frontend's https origin). |
@@ -117,7 +116,7 @@ Server (`server/app/core/config.py`; names are case-insensitive, blank = not set
 | `GOOGLE_PLAY_COUNTRY`, `GOOGLE_PLAY_MAX_QUERIES_PER_SCAN` | no | `in`, `6` | Optional `google-play-scraper` package (not installed by default; license/terms unverified). |
 | `SOURCE_SLOW_THRESHOLD_MS`, `COLLECTOR_TIMEOUT_SECONDS`, `REACHABILITY_CHECKS_PER_SCAN` | no | `4000`, `15`, `0` | Collector timing and optional reachability checks of result URLs. |
 | `SCAM_LLM_ENABLED`, `SCAM_LLM_PROVIDER`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `HUGGINGFACE_API_TOKEN`, `HUGGINGFACE_MODEL` | no | `false`, `gemini`, unset, `gemini-3.5-flash-lite`, unset, unset | Optional hosted AI text check (never for sample data). Keys are secrets. See docs/USER_GUIDE.md. |
-| `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | no | unset, `APP_ENV`, `0.0` | Optional error reporting; needs `pip install -r server/requirements-extra.txt`. DSN is a secret. |
+| `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE` | no | unset, `APP_ENV`, `0.0` | Optional error reporting; needs `pip install -r backend/requirements-extra.txt`. DSN is a secret. |
 
 Container-only (docker-compose.yml / entrypoint / frontend image):
 
@@ -135,13 +134,13 @@ Container-only (docker-compose.yml / entrypoint / frontend image):
 
 ## First run
 
-1. `copy server\.env.example server\.env` (or `cp .env.example .env` for Docker). The file `server/.env` is gitignored; never commit real values.
+1. `copy backend\.env.example backend\.env` (or `cp .env.example .env` for Docker). The file `backend/.env` is gitignored; never commit real values.
 2. Fill in `ADMIN_EMAIL`, `ADMIN_PASSWORD` and `JWT_SECRET`:
    `python -c "import secrets; print(secrets.token_urlsafe(48))"`
 3. Apply migrations (`python -m scripts.migrate`, or the compose api does it) and start the server and frontend.
 4. Sign in, open `/setup`, create the brand: name, aliases, official handles/apps, logo (PNG, JPEG or WebP, at least 256 px, roughly square, 2 MB max). The official handles and package ids are your **allowlist**: only an exact match is excluded from detections.
-5. **Going live is your step.** Add `TAVILY_API_KEY=...` to `server/.env` (or `.env` for Docker), then run the one-call check yourself (it costs 1 credit and is never run by the build):
-   `cd server && .\.venv\Scripts\python -m scripts.live_check` (see `docs/COLLECTORS.md`).
+5. **Going live is your step.** Add `TAVILY_API_KEY=...` to `backend/.env` (or `.env` for Docker), then run the one-call check yourself (it costs 1 credit and is never run by the build):
+   `cd backend && .\.venv\Scripts\python -m scripts.live_check` (see `docs/COLLECTORS.md`).
 6. Settings > Account (admin) switches the data mode: **Auto** (default: live if a live source is configured, else sample), **Live**, **Sample**. The header shows a "Sample data" badge whenever the data is sample.
 7. Run a scan from the Dashboard, review detections, create a report draft, approve it.
 
@@ -150,13 +149,13 @@ Container-only (docker-compose.yml / entrypoint / frontend image):
 * `GET /health` (public): overall `ok | degraded | down` and one word per component (database, migration, collectors, redis, worker, data_dir). 200 for ok/degraded, **503 only if the database is down**. Cheap, makes no third-party calls.
 * `GET /health/live`: the process answers (container liveness).
 * `GET /api/health/details` (admin): reasons, ages, migration revision, worker count, free disk.
-* **Canary:** `cd server && python -m scripts.canary` or admin `POST /api/health/canary` plants a fictional fake ("Zephyrine Vault Bank") in an in-memory database, runs the real pipeline plus the sample collector, and reports pass/fail for: fake profile flagged, fake app stored for review, official assets excluded, unrelated business not flagged, score explained. It proves the **pipeline logic** (name matching, allowlist, scoring) still works after a change. It does **not** prove that Tavily/iTunes/etc. are reachable or return real data (use `/health` and the Source Health page, and one real scan, for that). It never touches your database or the network.
+* **Canary:** `cd backend && python -m scripts.canary` or admin `POST /api/health/canary` plants a fictional fake ("Zephyrine Vault Bank") in an in-memory database, runs the real pipeline plus the sample collector, and reports pass/fail for: fake profile flagged, fake app stored for review, official assets excluded, unrelated business not flagged, score explained. It proves the **pipeline logic** (name matching, allowlist, scoring) still works after a change. It does **not** prove that Tavily/iTunes/etc. are reachable or return real data (use `/health` and the Source Health page, and one real scan, for that). It never touches your database or the network.
 
 ## Deploy to a managed host (generic)
 
 Components: managed PostgreSQL, managed Redis, a container host for three containers (`api`, `worker`, `frontend`), a TLS-terminating proxy/ingress, and a persistent volume for `DATA_DIR`.
 
-1. **Build and push** the two images (`server/Dockerfile`, `frontend/Dockerfile`) to your registry. CI builds them without pushing; a publish job template is commented in `.github/workflows/ci.yml`.
+1. **Build and push** the two images (`backend/Dockerfile`, `frontend/Dockerfile`) to your registry. CI builds them without pushing; a publish job template is commented in `.github/workflows/ci.yml`.
 2. **Database:** create a PostgreSQL database and user; set `DATABASE_URL=postgresql+psycopg://...` (add `?sslmode=require` if your provider needs it).
 3. **Redis:** set `REDIS_URL` (use `rediss://` for TLS). The worker is idle without it.
 4. **Secrets:** put `JWT_SECRET`, `ADMIN_PASSWORD`, `TAVILY_API_KEY`, `REDIS_URL`, `DATABASE_URL`, `SENTRY_DSN` in the platform's secret store, not in images, compose files or the repo. Rotate `JWT_SECRET` if it ever leaks (everyone is signed out).
@@ -198,10 +197,10 @@ Tick each item on the machine you will demo from, the day before and again 30 mi
 ## Tests
 
 ```powershell
-cd server;   .\.venv\Scripts\python -m pytest -q          # SQLite, no network
+cd backend;   .\.venv\Scripts\python -m pytest -q          # SQLite, no network
              $env:TEST_DATABASE_URL="postgresql+psycopg://user@host:5432/throwaway"; .\.venv\Scripts\python -m pytest -q   # same suite on PostgreSQL
              .\.venv\Scripts\python -m ruff check .
 cd frontend; npm run lint; npm test; npm run build; npm run e2e:install; npm run test:e2e
 ```
 
-More: `server/README.md`, `frontend/README.md`, `docs/API.md`, `docs/COLLECTORS.md`, `docs/DECISIONS.md`, `docs/DEPENDENCIES.md`, `docs/DONE_AUDIT.md`, `docs/SECURITY.md`.
+More: `backend/README.md`, `frontend/README.md`, `docs/API.md`, `docs/COLLECTORS.md`, `docs/DECISIONS.md`, `docs/DEPENDENCIES.md`, `docs/DONE_AUDIT.md`, `docs/SECURITY.md`.

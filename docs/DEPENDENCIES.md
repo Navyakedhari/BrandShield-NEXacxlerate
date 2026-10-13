@@ -1,7 +1,7 @@
-# Dependencies (server/)
+# Dependencies (backend/)
 
-Licenses read from installed package metadata (`importlib.metadata`) in `server/.venv` on 2026-10-13.
-Direct dependencies are listed in `server/requirements.txt` / `requirements-dev.txt`; the rest are transitive.
+Licenses read from installed package metadata (`importlib.metadata`) in `backend/.venv` on 2026-10-13.
+Direct dependencies are listed in `backend/requirements.txt` / `requirements-dev.txt`; the rest are transitive.
 
 ## Needs review
 
@@ -91,7 +91,7 @@ No GPL or AGPL packages were added. Google Safe Browsing is called with plain `h
 
 ## Phase 2 (detection engine)
 
-No package was added to `requirements.txt`. The engine uses only the standard library, Pillow and pydantic (already present). pHash/dHash, the DCT, Damerau-Levenshtein and DP word segmentation are implemented in `server/app/engine/`; `imagehash` and `numpy` were not needed.
+No package was added to `requirements.txt`. The engine uses only the standard library, Pillow and pydantic (already present). pHash/dHash, the DCT, Damerau-Levenshtein and DP word segmentation are implemented in `backend/app/core/engine/`; `imagehash` and `numpy` were not needed.
 
 Optional packages, lazily imported, NOT installed and NOT in requirements (the engine works without them):
 
@@ -104,7 +104,7 @@ Optional packages, lazily imported, NOT installed and NOT in requirements (the e
 
 No package was added to `requirements.txt`. Everything uses `httpx` (already a direct dependency; its `MockTransport` is used in tests, so no `respx`).
 
-Optional package, lazily imported, NOT installed and NOT in requirements (`server/app/collectors/google_play.py`):
+Optional package, lazily imported, NOT installed and NOT in requirements (`backend/app/core/collectors/google_play.py`):
 
 | Package | License | Used by | Notes |
 |---|---|---|---|
@@ -115,7 +115,7 @@ External services (no package): Tavily Search API (needs `TAVILY_API_KEY`; plan 
 
 ## Phase 4 (scan pipeline, background worker)
 
-Added to `server/requirements.txt` after reading the licenses from the installed package metadata (`importlib.metadata`, 2026-10-13):
+Added to `backend/requirements.txt` after reading the licenses from the installed package metadata (`importlib.metadata`, 2026-10-13):
 
 | Package | Version | License (from metadata) | Why |
 |---|---|---|---|
@@ -164,8 +164,8 @@ No GPL or AGPL package was found in the frontend tree.
 
 ## Phase 6 (deployment readiness)
 
-- **psycopg / psycopg-binary 3.x (LGPL-3.0-only):** already in `server/requirements.txt` since Phase 1 and already flagged above. Phase 6 makes it load-bearing (PostgreSQL is the production database and was exercised against a real PostgreSQL 18.1). Same review note applies: unmodified normal import, container image distributes it, legal should confirm.
-- **sentry-sdk 2.72.0 (MIT):** license read from the wheel metadata of the downloaded file (`License-Expression: MIT`, `License-File: LICENSE`) on 2026-10-13. It is in the new `server/requirements-extra.txt` (optional; NOT in `requirements.txt`, not installed in `.venv`, not needed by the tests, which use a fake module). Install with `pip install -r requirements-extra.txt` or build the image with `--build-arg INSTALL_EXTRAS=true`. Its transitive dependencies (certifi MPL-2.0 already listed, urllib3 MIT) were not separately audited.
+- **psycopg / psycopg-binary 3.x (LGPL-3.0-only):** already in `backend/requirements.txt` since Phase 1 and already flagged above. Phase 6 makes it load-bearing (PostgreSQL is the production database and was exercised against a real PostgreSQL 18.1). Same review note applies: unmodified normal import, container image distributes it, legal should confirm.
+- **sentry-sdk 2.72.0 (MIT):** license read from the wheel metadata of the downloaded file (`License-Expression: MIT`, `License-File: LICENSE`) on 2026-10-13. It is in the new `backend/requirements-extra.txt` (optional; NOT in `requirements.txt`, not installed in `.venv`, not needed by the tests, which use a fake module). Install with `pip install -r requirements-extra.txt` or build the image with `--build-arg INSTALL_EXTRAS=true`. Its transitive dependencies (certifi MPL-2.0 already listed, urllib3 MIT) were not separately audited.
 - **pgvector:** NOT added. Documented optional for future embedding similarity.
 - **Container base images (not Python/npm packages, licenses not audited):** `python:3.12-slim` (Debian + PSF), `node:22-alpine`, `nginxinc/nginx-unprivileged:1.27-alpine` (BSD-2-Clause nginx), `postgres:17-alpine` (PostgreSQL License), `redis:7.2-alpine` (BSD-3-Clause; pinned to 7.2 because, to my recollection (unverified), Redis 7.4+ switched to RSALv2/SSPL, and 8.x added AGPLv3: **check which Redis tag you pull and consider `valkey/valkey` (BSD-3-Clause) if that matters to legal**).
 - **CI actions** (checkout, setup-python, setup-node, upload-artifact, docker/*) are pinned by major version; they are GitHub-owned or Docker-owned actions.
@@ -178,8 +178,8 @@ Licenses read from the installed metadata (`importlib.metadata`) on 2026-10-14:
 
 | Package | Version | License | Where | Notes |
 |---|---|---|---|---|
-| google-genai | 2.30.0 | Apache-2.0 | `app/providers/text/gemini.py`, lazy import, `requirements-extra.txt` | ~11 MB; brings google-auth, tenacity, websockets, requests, distro, sniffio |
-| huggingface_hub | 2.2.0 | Apache-2.0 | `app/providers/text/huggingface.py`, lazy import, `requirements-extra.txt` | ~7 MB; brings httpx2, hf-xet, fsspec, tqdm, pyyaml, click |
+| google-genai | 2.30.0 | Apache-2.0 | `app/core/providers/text/gemini.py`, lazy import, `requirements-extra.txt` | ~11 MB; brings google-auth, tenacity, websockets, requests, distro, sniffio |
+| huggingface_hub | 2.2.0 | Apache-2.0 | `app/core/providers/text/huggingface.py`, lazy import, `requirements-extra.txt` | ~7 MB; brings httpx2, hf-xet, fsspec, tqdm, pyyaml, click |
 | ImageHash | 4.3.2 | BSD-2-Clause | `engine/image_hashes.py::ImageHashSimilarity`, optional | **Heavy:** needs numpy 2.5.4 (BSD-3-Clause and others, ~54 MB), scipy 1.18.1 (BSD, ~135 MB), PyWavelets 1.10.0 (MIT / BSD-3-Clause, ~9 MB): about 200 MB installed. So the default image code implements pHash, dHash, a Haar low-pass wHash and a colour hash locally over Pillow; ImageHash stays optional |
 
 The Anthropic option and its optional `anthropic` package were removed in E5 (the owner does not use that API). No GPL/AGPL package was added.

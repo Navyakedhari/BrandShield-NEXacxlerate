@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { ageWords, fmtBytes, humanize, platformLabel, sourceLabel, statusChip, timeAgo, typeLabel } from './format';
 import { noteSampleFlag, isSampleNow, resetSampleFlag } from './sample';
-import { checkDimensions, sniffImageFormat } from '../lib/logoCheck';
-import { rangeFor, rangeLabel, rangeText } from '../lib/dates';
+import { checkDimensions, sniffImageFormat } from '../utils/logoCheck';
+import { rangeFor, rangeLabel, rangeText } from '../utils/dates';
 import { describeRetry, eventsFromScans } from '../pages/SourceHealthPage';
 import { reportName } from '../pages/ReportsPage';
 import type { Scan } from './types';
