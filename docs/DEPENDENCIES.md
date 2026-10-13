@@ -108,7 +108,7 @@ Optional package, lazily imported, NOT installed and NOT in requirements (`backe
 
 | Package | License | Used by | Notes |
 |---|---|---|---|
-| google-play-scraper (import name `google_play_scraper`) | **UNVERIFIED.** Believed MIT from memory of the upstream project; metadata could not be checked offline and the package was not downloaded | `GooglePlayCollector` (search), only if the user installs it | **Needs review before use:** confirm the license from the wheel metadata, pin a version, and review the terms-of-use risk (it scrapes Google Play pages, there is no official search API). Without it the source reports `not_installed` and the app works. Tests inject a fake search function and never import it. |
+| google-play-scraper 1.2.7 (import name `google_play_scraper`) | **MIT** (read from the installed wheel metadata) | `GooglePlayCollector` (search), installed via `requirements-extra.txt` | It scrapes Google Play pages (no official search API), so review Google's terms of use before relying on it. Without it the source reports `not_installed` and the app works. Tests inject a fake search function. |
 
 External services (no package): Tavily Search API (needs `TAVILY_API_KEY`; plan terms apply), Apple iTunes Search API (no key, about 20 calls per minute), optional self-hosted SearXNG (AGPL-3.0 software run by the operator as a separate service, not linked or bundled; legal may want to note it).
 
