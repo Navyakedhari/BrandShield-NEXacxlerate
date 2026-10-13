@@ -11,9 +11,9 @@ export const BrandMark: React.FC<{ size?: number }> = ({ size = 26 }) => (
   </svg>
 );
 
-/** "BrandShield" in white and "AI" in the accent colour. */
+/** "ScamMind" in white and "AI" in the accent colour. */
 export const Wordmark: React.FC<{ upper?: boolean }> = ({ upper }) => (
   <>
-    {upper ? 'BRANDSHIELD' : 'BrandShield'} <span className="wordmark-ai">AI</span>
+    {upper ? 'SCAMMIND' : 'ScamMind'} <span className="wordmark-ai">AI</span>
   </>
 );

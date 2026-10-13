@@ -6,7 +6,6 @@ import { resetBrand } from './hooks/useBrand';
 
 // Pages matching PDF
 import { LoginPage } from './pages/LoginPage';
-import { ProtectBrandPage } from './pages/ProtectBrandPage';
 import { SetupPage } from './pages/SetupPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { BrandProfilePage } from './pages/BrandProfilePage';
@@ -46,9 +45,6 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
 
         <Route element={<RequireAuth />}>
-          {/* Post-login brand protection workflow */}
-          <Route path="/protect-brand" element={<ProtectBrandPage />} />
-
           {/* 2. /setup: 3-step first-run (the admin must be signed in) */}
           <Route path="/setup" element={<SetupPage />} />
 
