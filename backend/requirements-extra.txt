@@ -1,4 +1,3 @@
-
 # Optional extras. Not needed to run or test the server; each one is switched on by an environment variable.
 # Install with:  pip install -r requirements-extra.txt
 sentry-sdk>=2.0,<3   # MIT. Error reporting when SENTRY_DSN is set (app/config/observability.py scrubs before sending)
