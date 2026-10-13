@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ChevronDown, LogOut, Menu } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 import { sm } from '../../api/sm';
 import { resetSampleFlag, useIsSample } from '../../api/sample';
 import { resetBrand } from '../../hooks/useBrand';
@@ -67,6 +68,8 @@ export const Header: React.FC<HeaderProps> = ({
             Sample data
           </span>
         )}
+
+        <ThemeToggle />
 
         <button type="button" className="bell-btn" aria-label="Notifications">
           <Bell size={18} strokeWidth={1.8} />

@@ -16,13 +16,13 @@
   border: 1px solid #23232c;
   font-size: 14.5px;
   font-weight: 600;
-  color: #a3a6b8;
+  color: var(--t-mid);
 }
 
 .settings-tab-btn.active {
   background: #14172c;
   border-color: #4f63f0;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .settings-two-col-grid {
@@ -48,7 +48,7 @@
 .settings-lbl {
   font-size: 13.5px;
   font-weight: 600;
-  color: #d1d3df;
+  color: var(--t-strong);
 }
 
 .settings-left-card .panel-card-title,
@@ -65,7 +65,7 @@
   border: 1px solid #2a2a35;
   padding: 0 14px;
   font-size: 14.5px;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .checkboxes-stack {
@@ -79,7 +79,7 @@
   align-items: center;
   gap: 12px;
   font-size: 14.5px;
-  color: #d1d3df;
+  color: var(--t-strong);
   cursor: pointer;
 }
 
@@ -106,7 +106,7 @@
 
 .sensitivity-threshold-text {
   font-size: 14px;
-  color: #d1d3df;
+  color: var(--t-strong);
 }
 .sensitivity-value { color: var(--accent); font-weight: 700; }
 
@@ -147,13 +147,13 @@
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #a3a6b8;
+  color: var(--t-mid);
 }
 
 .sensitivity-summary-note {
   font-size: 13px;
   line-height: 1.5;
-  color: #b1b4c6;
+  color: var(--t-soft);
   border: 1px solid #23232c;
   border-radius: 12px;
   padding: 12px 16px;
@@ -201,7 +201,7 @@
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 13px;
-  color: #d1d3df;
+  color: var(--t-strong);
   font-weight: 600;
 }
 
@@ -216,7 +216,7 @@
 .add-word-input {
   border: none;
   background: transparent;
-  color: #ffffff;
+  color: var(--text-main);
   font-size: 12px;
   flex: 1;
   min-width: 90px;

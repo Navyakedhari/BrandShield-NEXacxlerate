@@ -70,10 +70,10 @@ export const Donut: React.FC<DonutProps> = ({
           pointerEvents: 'none'
         }}
       >
-        <div style={{ fontSize: '22px', fontWeight: 800, color: '#EDEDF2', lineHeight: 1 }}>
+        <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1 }}>
           {totalValue}
         </div>
-        <div style={{ fontSize: '11px', color: '#8B8B98', marginTop: '4px', fontWeight: 500 }}>
+        <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px', fontWeight: 500 }}>
           {totalLabel}
         </div>
       </div>

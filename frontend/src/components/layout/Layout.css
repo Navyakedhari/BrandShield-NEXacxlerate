@@ -195,7 +195,7 @@
 .nav-item.active {
   background: rgba(79, 99, 240, 0.12);
   border-color: rgba(79, 99, 240, 0.45);
-  color: #ffffff;
+  color: var(--text-main);
   font-weight: 600;
   box-shadow: 0 0 22px -4px rgba(79, 99, 240, 0.5);
 }

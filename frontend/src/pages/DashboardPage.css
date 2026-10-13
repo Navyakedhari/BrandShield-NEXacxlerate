@@ -126,7 +126,7 @@
 .kpi-label-text {
   font-size: 13.5px;
   font-weight: 600;
-  color: #b1b4c6;
+  color: var(--t-soft);
 }
 
 .kpi-value-row {
@@ -137,7 +137,7 @@
 .kpi-big-num {
   font-size: 30px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
   line-height: 1.1;
 }
 
@@ -199,7 +199,7 @@
 .panel-card-title {
   font-size: 16px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .head-link {
@@ -241,12 +241,12 @@
 }
 
 .legend-label-text {
-  color: #b1b4c6;
+  color: var(--t-soft);
 }
 
 .legend-count-val {
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 /* Source bar list */
@@ -265,12 +265,12 @@
 }
 
 .source-bar-name {
-  color: #d4d6e4;
+  color: var(--t-strong);
 }
 
 .source-bar-count {
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
   text-align: right;
 }
 
@@ -328,7 +328,7 @@
 .review-item-name {
   font-size: 13px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -336,7 +336,7 @@
 
 .review-item-sub {
   font-size: 11px;
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 /* Row 3: Split Bottom (Table + Stack) */
@@ -365,7 +365,7 @@
   padding: 10px 12px;
   font-size: 11.5px;
   font-weight: 600;
-  color: #7b7e92;
+  color: var(--t-low);
   border-bottom: 1px solid #23232c;
 }
 
@@ -391,12 +391,12 @@
 
 .entity-main-name {
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .entity-sub-reason {
   font-size: 11px;
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 .cell-muted {
@@ -405,7 +405,7 @@
 
 .cell-bold {
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 /* Right Stack */
@@ -507,12 +507,12 @@
 }
 
 .source-mini-name {
-  color: #ffffff;
+  color: var(--text-main);
   font-weight: 500;
 }
 
 .source-mini-status {
-  color: #7b7e92;
+  color: var(--t-low);
   font-size: 11.5px;
 }
 

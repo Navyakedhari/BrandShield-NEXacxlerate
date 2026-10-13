@@ -27,7 +27,7 @@
 .setup-logo-text {
   font-size: 22px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .skip-link {
@@ -50,13 +50,13 @@
   font-size: 38px;
   font-weight: 800;
   letter-spacing: -0.025em;
-  color: #ffffff;
+  color: var(--text-main);
   margin-bottom: 8px;
 }
 
 .setup-subtitle {
   font-size: 16px;
-  color: #a3a6b8;
+  color: var(--t-mid);
   margin-bottom: 30px;
 }
 
@@ -73,17 +73,17 @@
   gap: 12px;
   font-size: 15px;
   font-weight: 600;
-  color: #a3a6b8;
+  color: var(--t-mid);
 }
 
 .step-item.active {
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .step-item.active .step-num {
   background: #14172c;
   border-color: #4f63f0;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .step-num {
@@ -131,14 +131,14 @@
 .step-heading {
   font-size: 24px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
   margin-bottom: 12px;
 }
 
 .step-description {
   font-size: 14.5px;
   line-height: 1.65;
-  color: #a3a6b8;
+  color: var(--t-mid);
   margin-bottom: 24px;
 }
 
@@ -197,7 +197,7 @@
   border: 1px solid #2a2a35;
   padding: 0 14px;
   font-size: 15.5px;
-  color: #ffffff;
+  color: var(--text-main);
   transition: border-color 0.15s ease;
 }
 
@@ -241,7 +241,7 @@
 .logo-status-title {
   font-size: 15px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .logo-meta {
@@ -252,7 +252,7 @@
 .replace-btn {
   border: 1px solid #2a2a35;
   background: rgba(255, 255, 255, 0.04);
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .setup-action-footer {
@@ -281,7 +281,7 @@
   border: 1px solid #23232c;
   border-radius: 8px;
   font-size: 12.5px;
-  color: #d1d3df;
+  color: var(--t-strong);
 }
 
 .setup-scan-sources {

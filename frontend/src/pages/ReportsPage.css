@@ -27,7 +27,7 @@
 .export-lbl {
   font-size: 12.5px;
   font-weight: 600;
-  color: #c4c6d6;
+  color: var(--t-soft);
 }
 
 .export-select {
@@ -37,7 +37,7 @@
   border: 1px solid #2a2a35;
   padding: 0 14px;
   font-size: 14px;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .checkbox-column {
@@ -51,7 +51,7 @@
   align-items: center;
   gap: 10px;
   font-size: 14px;
-  color: #d1d3df;
+  color: var(--t-strong);
   cursor: pointer;
 }
 
@@ -75,13 +75,13 @@
   border: 1px solid #2a2a35;
   font-size: 13.5px;
   font-weight: 600;
-  color: #8c8f9f;
+  color: var(--t-low);
 }
 
 .format-toggle-btn.active {
   background: #14172c;
   border-color: #4f63f0;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .generate-btn {
@@ -126,12 +126,12 @@
 .preview-doc-title {
   font-size: 18px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .preview-doc-sub {
   font-size: 12.5px;
-  color: #a3a6b8;
+  color: var(--t-mid);
 }
 
 .sample-data-chip {
@@ -140,7 +140,7 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 11.5px;
-  color: #8c8f9f;
+  color: var(--t-low);
 }
 
 /* Stats grid */
@@ -172,12 +172,12 @@
 .stat-value {
   font-size: 24px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .stat-desc {
   font-size: 12px;
-  color: #a3a6b8;
+  color: var(--t-mid);
 }
 
 /* Preview table */
@@ -196,7 +196,7 @@
   padding: 10px 12px;
   font-size: 11.5px;
   font-weight: 600;
-  color: #7b7e92;
+  color: var(--t-low);
   border-bottom: 1px solid #23232c;
 }
 
@@ -206,17 +206,17 @@
 }
 
 .row-num-cell {
-  color: #6e7185;
+  color: var(--t-low);
 }
 
 .row-name-cell {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .row-score-cell {
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 /* Recent exports */
@@ -253,12 +253,12 @@
   font-family: monospace;
   font-size: 13px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .export-filemeta {
   font-size: 12px;
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 .download-btn {

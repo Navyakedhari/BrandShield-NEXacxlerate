@@ -52,12 +52,55 @@
   --blue-bg: rgba(79, 157, 255, 0.14);
   --blue-border: rgba(79, 157, 255, 0.35);
 
+  /* Text shades used across pages (exact dark values; light overrides below) */
+  --t-strong: #d1d3df;
+  --t-soft: #c4c6d6;
+  --t-mid: #a3a6b8;
+  --t-low: #7b7e92;
+
   /* Sidebar */
   --sidebar-width: 244px;
 
   /* Font */
   --font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
+/* Light theme: same token names, light values. Set with <html data-theme="light"> (see utils/theme.ts). */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg-page: #eef0f6;
+  --bg-shell: #f7f8fc;
+  --border-shell: #dfe2ec;
+  --bg-card: #ffffff;
+  --border-card: #dcdfea;
+  --bg-inner: #f3f5fa;
+  --border-inner: #e2e5ef;
+  --text-main: #14151f;
+  --text-muted: #4d5068;
+  --text-dim: #6b6e86;
+  --accent: #4a5ce0;
+  --accent-glow: 0 0 20px rgba(74, 92, 224, 0.15);
+  --red-text: #c62f45;
+  --orange-text: #b5651d;
+  --green-text: #0f8a5f;
+  --purple-text: #6d4fd0;
+  --blue-text: #1f6fd6;
+  --btn-glow: 0 8px 24px -4px rgba(79, 99, 240, 0.3);
+  --t-strong: #1f2133;
+  --t-soft: #353850;
+  --t-mid: #4d5068;
+  --t-low: #6b6e86;
+}
+:root[data-theme='light'] .format-toggle-btn.active,
+:root[data-theme='light'] .settings-tab-btn.active,
+:root[data-theme='light'] .step-item.active .step-num,
+:root[data-theme='light'] .filter-tab.active,
+:root[data-theme='light'] .step-timeline-num,
+:root[data-theme='light'] .step-circle { color: #fff; } /* these chips keep a dark fill in both themes */
+:root[data-theme='light'] .dash-hero-card .btn-secondary,
+:root[data-theme='light'] .dash-hero-card .btn-secondary { color: #fff; border-color: rgba(255, 255, 255, 0.3); } /* the hero stays dark */
+:root[data-theme='light'] .bell-btn { background: rgba(20, 21, 31, 0.04); }
+:root[data-theme='light'] .bell-btn:hover { background: rgba(20, 21, 31, 0.08); }
 
 *, *::before, *::after {
   box-sizing: border-box;

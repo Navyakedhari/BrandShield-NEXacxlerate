@@ -50,7 +50,7 @@
 .section-title {
   font-size: 20px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .section-desc {
@@ -74,7 +74,7 @@
 .field-lbl {
   font-size: 12.5px;
   font-weight: 600;
-  color: #c4c6d6;
+  color: var(--t-soft);
 }
 
 .field-input, .field-select {
@@ -84,7 +84,7 @@
   border: 1px solid #2a2a35;
   padding: 0 14px;
   font-size: 14.5px;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .field-input:focus, .field-select:focus {
@@ -118,7 +118,7 @@
 
 .interactive-tag-pill.pill-neutral {
   background: rgba(255, 255, 255, 0.04);
-  color: #d1d3df;
+  color: var(--t-strong);
   border-color: rgba(255, 255, 255, 0.12);
 }
 
@@ -144,7 +144,7 @@
 .inline-tag-input {
   border: none;
   background: transparent;
-  color: #ffffff;
+  color: var(--text-main);
   font-size: 12.5px;
   flex: 1;
   min-width: 130px;
@@ -185,12 +185,12 @@
 .logo-box-title {
   font-size: 14px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .logo-box-desc {
   font-size: 12px;
-  color: #8c8f9f;
+  color: var(--t-low);
 }
 
 .logo-box-specs {
@@ -230,7 +230,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .account-handle-info {
@@ -242,12 +242,12 @@
 .account-handle-title {
   font-size: 14px;
   font-weight: 400;
-  color: #b1b4c6;
+  color: var(--t-soft);
 }
 
 .account-url-sub {
   font-size: 12px;
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 .account-item-right {
@@ -257,7 +257,7 @@
 }
 
 .item-delete-btn {
-  color: #a3a6b8;
+  color: var(--t-mid);
   width: 38px;
   height: 38px;
   display: inline-flex;
@@ -287,7 +287,7 @@
 .subform-title {
   font-size: 13px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .add-account-row {
@@ -309,7 +309,7 @@
 .sub-lbl {
   font-size: 11.5px;
   font-weight: 600;
-  color: #8c8f9f;
+  color: var(--t-low);
 }
 
 .add-btn {
@@ -318,7 +318,7 @@
 
 .subform-hint {
   font-size: 11.5px;
-  color: #6e7185;
+  color: var(--t-low);
 }
 
 /* Official Apps Table */
@@ -337,7 +337,7 @@
   padding: 10px 12px;
   font-size: 11.5px;
   font-weight: 600;
-  color: #7b7e92;
+  color: var(--t-low);
   border-bottom: 1px solid #23232c;
 }
 
@@ -366,21 +366,21 @@
 
 .app-main-title {
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .app-stores-sub {
   font-size: 11px;
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 .package-id-cell {
-  color: #c4c6d6;
+  color: var(--t-soft);
   font-size: 13px;
 }
 
 .publisher-cell {
-  color: #c4c6d6;
+  color: var(--t-soft);
 }
 
 .apps-action-row {
@@ -419,7 +419,7 @@
 
 .save-note-text {
   font-size: 13px;
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 .save-btn-group {
@@ -444,7 +444,7 @@
 .side-card-title {
   font-size: 16px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 .side-card-title.with-icon {
   display: flex;
@@ -475,13 +475,13 @@
 .health-pct-num {
   font-size: 18px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .health-gauge-text {
   font-size: 12.5px;
   line-height: 1.45;
-  color: #8c8f9f;
+  color: var(--t-low);
 }
 
 .health-checklist {
@@ -499,7 +499,7 @@
 }
 
 .checklist-item.ok {
-  color: #c4c6d6;
+  color: var(--t-soft);
 }
 
 .checklist-item.warn {
@@ -539,18 +539,18 @@
 .allowlist-num {
   font-size: 24px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .allowlist-lbl {
   font-size: 12.5px;
-  color: #a3a6b8;
+  color: var(--t-mid);
 }
 
 .allowlist-explanation {
   font-size: 12.5px;
   line-height: 1.55;
-  color: #a3a6b8;
+  color: var(--t-mid);
 }
 
 /* Guide Steps */
@@ -585,10 +585,10 @@
 .guide-step-text {
   font-size: 13px;
   line-height: 1.5;
-  color: #a3a6b8;
+  color: var(--t-mid);
 }
 .guide-step-text strong {
-  color: #ffffff;
+  color: var(--text-main);
   font-weight: 700;
 }
 

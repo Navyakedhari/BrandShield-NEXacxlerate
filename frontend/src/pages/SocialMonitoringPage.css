@@ -26,7 +26,7 @@
 .source-lbl {
   font-size: 12px;
   font-weight: 700;
-  color: #7b7e92;
+  color: var(--t-low);
   margin-right: 2px;
 }
 
@@ -39,7 +39,7 @@
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid #23232c;
   font-size: 12px;
-  color: #c4c6d6;
+  color: var(--t-soft);
 }
 
 .source-pill.ok {
@@ -101,13 +101,13 @@
   border: 1px solid #1f1f28;
   font-size: 14px;
   font-weight: 600;
-  color: #a3a6b8;
+  color: var(--t-mid);
 }
 
 .filter-tab.active {
   background: #141628;
   border-color: #4f63f0;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .scan-btn {
@@ -141,7 +141,7 @@
 
 .sort-hint {
   font-size: 11.5px;
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 .detections-scroll-list {
@@ -190,7 +190,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
   flex-shrink: 0;
 }
 
@@ -204,7 +204,7 @@
 .detection-row-name {
   font-size: 13.5px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -212,7 +212,7 @@
 
 .detection-row-handle {
   font-size: 11px;
-  color: #7b7e92;
+  color: var(--t-low);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -228,7 +228,7 @@
 .score-val {
   font-size: 15px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
 }
 .score-val.band-high { color: var(--red-text); }
 .score-val.band-medium { color: var(--orange-text); }
@@ -249,7 +249,7 @@
 
 .detail-timestamp {
   font-size: 12px;
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 .detail-subject-row {
@@ -268,7 +268,7 @@
 .detail-subject-title {
   font-size: 20px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .detail-subject-chips {
@@ -280,7 +280,7 @@
 
 .handle-sub {
   font-size: 12.5px;
-  color: #8c8f9f;
+  color: var(--t-low);
 }
 
 .score-ring {
@@ -298,7 +298,7 @@
 .score-ring-num {
   font-size: 22px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-main);
   line-height: 1;
 }
 .score-ring-lbl {
@@ -381,7 +381,7 @@
   justify-content: center;
   font-weight: 800;
   font-size: 20px;
-  color: #ffffff;
+  color: var(--text-main);
   flex-shrink: 0;
 }
 
@@ -396,12 +396,12 @@
 .vs-profile-name {
   font-size: 15px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .vs-profile-handle {
   font-size: 12px;
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 .vs-bio-text {
@@ -421,7 +421,7 @@
 }
 .vs-footer-stats strong,
 .vs-app-specs strong {
-  color: #ffffff;
+  color: var(--text-main);
   font-weight: 700;
 }
 .vs-footer-stats strong.vs-hot,
@@ -446,12 +446,12 @@
 .scored-title {
   font-size: 15px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .scored-sub {
   font-size: 11.5px;
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 .signals-list {
@@ -475,17 +475,17 @@
 }
 
 .signal-label {
-  color: #a3a6b8;
+  color: var(--t-mid);
 }
 
 .signal-name {
-  color: #ffffff;
+  color: var(--text-main);
   font-weight: 700;
 }
 
 .signal-pts {
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
   flex-shrink: 0;
 }
 
@@ -516,7 +516,7 @@
 .evidence-title {
   font-size: 12px;
   font-weight: 700;
-  color: #c4c6d6;
+  color: var(--t-soft);
 }
 
 .evidence-row {
@@ -537,7 +537,7 @@
 }
 
 .evidence-text, .evidence-sha {
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 /* Action Buttons */
@@ -565,7 +565,7 @@
 
 .analyst-confirm-note {
   font-size: 11.5px;
-  color: #6e7185;
+  color: var(--t-low);
 }
 
 /* Bottom Dual Grid */
@@ -596,7 +596,7 @@
   color: var(--green-text);
 }
 .excluded-handle {
-  color: #ffffff;
+  color: var(--text-main);
   font-weight: 700;
 }
 
@@ -620,17 +620,17 @@
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid #1c1c24;
   font-size: 12.5px;
-  color: #d1d3df;
+  color: var(--t-strong);
 }
 
 .guard-entity-title {
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .guard-entity-sub {
   font-size: 11px;
-  color: #7b7e92;
+  color: var(--t-low);
 }
 
 .see-names-link {

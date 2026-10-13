@@ -56,7 +56,7 @@
 .package-sub {
   font-family: monospace;
   font-size: 12px;
-  color: #8c8f9f;
+  color: var(--t-low);
 }
 
 /* Publisher Alert Box */
@@ -83,7 +83,7 @@
 }
 
 .alert-box-text strong {
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .vs-app-specs {
@@ -115,7 +115,7 @@
 .overlap-title {
   font-size: 12.5px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-main);
 }
 
 .overlap-snippet {
@@ -143,7 +143,7 @@
 
 .overlap-sub-note {
   font-size: 11px;
-  color: #6e7185;
+  color: var(--t-low);
   margin-top: 2px;
 }
 
