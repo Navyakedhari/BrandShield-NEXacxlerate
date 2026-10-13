@@ -1,418 +1,1143 @@
-import React, { useMemo, useState } from 'react';
-import { Download } from 'lucide-react';
-import { Header } from '../components/layout/Header';
-import { Empty, ErrorBox, Loading, NoBrand, Notice, SampleNote } from '../components/common/States';
-import { ApiError } from '../api/client';
-import { fmtBytes, fmtDay, platformLabel, statusChip, statusLabel, typeLabel } from '../api/format';
-import { sm } from '../api/sm';
-import type { DetectionRow, DetectionType, Report } from '../api/types';
-import { useApi } from '../hooks/useApi';
-import { useBrand } from '../hooks/useBrand';
-import { useMe } from '../hooks/useMe';
-import { bounds, rangeFor, rangeLabel, rangeText } from '../utils/dates';
-import type { RangeKey } from '../utils/dates';
-import './ReportsPage.css';
+/* ═══════════════════════════════════════════════════════
+   SETUP PAGE — BrandShield Enterprise Cybersecurity SaaS
+   3-Step Onboarding and Protection Configuration Wizard
+   ═══════════════════════════════════════════════════════ */
 
-type StatusFilter = 'all' | 'new' | 'reviewing' | 'confirmed';
-type Format = 'html' | 'csv';
-
-/** The name shown in the report table: the handle for social accounts, the app's display name for apps (not the package id). */
-export function reportName(det: Pick<DetectionRow, 'category' | 'handle' | 'name'> | undefined, fallback: string): string {
-  if (!det) return fallback;
-  return det.category === 'social' ? det.handle || det.name : det.name;
+.setup-container {
+  min-height: 100vh;
+  width: 100%;
+  background: var(--bg-page, #08080b);
+  background-image:
+    radial-gradient(ellipse 70% 400px at 50% 0%, rgba(79, 99, 240, 0.12) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 300px at 85% 90%, rgba(139, 92, 246, 0.08) 0%, transparent 100%);
+  color: var(--text-main, #f2f3f7);
+  padding: 0 0 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
 }
 
-const errText = (e: unknown, fallback: string) => (e instanceof ApiError ? e.message : fallback);
+/* ── Top Bar ── */
+.setup-topbar {
+  width: 100%;
+  max-width: 1120px;
+  padding: 28px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-export const ReportsPage: React.FC = () => {
-  const { brand, missing } = useBrand();
-  const { canWrite } = useMe();
+.setup-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
 
-  const [rangeKey, setRangeKey] = useState<RangeKey>('7d');
-  const [includeProfiles, setIncludeProfiles] = useState(true);
-  const [includeBrandPages, setIncludeBrandPages] = useState(true);
-  const [includeScamAccounts, setIncludeScamAccounts] = useState(true);
-  const [includeApps, setIncludeApps] = useState(true);
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [includeEvidence, setIncludeEvidence] = useState(true);
-  const [exportFormat, setExportFormat] = useState<Format>('html');
-  const [generating, setGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [info, setInfo] = useState<string | null>(null);
-  const [busyId, setBusyId] = useState<number | null>(null);
-  const [previewHtml, setPreviewHtml] = useState<{ id: number; html: string } | null>(null);
+.setup-logo-text {
+  font-size: 19px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.01em;
+}
 
-  const range = useMemo(() => rangeFor(rangeKey), [rangeKey]);
+.setup-env-chip {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(139, 155, 255, 0.1);
+  border: 1px solid rgba(139, 155, 255, 0.25);
+  color: #8b9bff;
+  margin-left: 4px;
+}
 
-  // Which detections the form selects: all listed detections (never cleared / marked-official ones), filtered by the form.
-  const all = useApi((signal) => sm.detections({ limit: 200, sort: 'score_desc' }, signal), []);
-  const types = useMemo(() => {
-    const t: DetectionType[] = [];
-    if (includeProfiles) t.push('fake_profile');
-    if (includeBrandPages) t.push('fake_brand_page');
-    if (includeScamAccounts) t.push('scam_account');
-    if (includeApps) t.push('fake_app');
-    return t;
-  }, [includeProfiles, includeBrandPages, includeScamAccounts, includeApps]);
+.skip-link {
+  font-size: 13px;
+  color: var(--accent, #8b9bff);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: opacity 0.15s ease;
+}
 
-  const selected = useMemo(() => {
-    const { start, end } = bounds(range);
-    return (all.data?.items ?? []).filter((d) => {
-      if (!types.includes(d.type)) return false;
-      if (statusFilter !== 'all' && d.status !== statusFilter) return false;
-      const t = new Date(d.found_at).getTime();
-      return t >= start && t <= end;
-    });
-  }, [all.data, types, statusFilter, range]);
-  const ids = useMemo(() => selected.map((d) => d.id), [selected]);
-  const byId = useMemo(() => new Map(selected.map((d) => [d.id, d])), [selected]);
+.skip-link:hover {
+  opacity: 0.8;
+  text-decoration: none;
+}
 
-  const idsKey = ids.join(',');
-  const preview = useApi(
-    (signal) => sm.reportPreview({ ids, from: range.fromIso, to: range.toIso, include_evidence: includeEvidence }, signal),
-    [idsKey, range.fromIso, range.toIso, includeEvidence],
-    !!all.data && ids.length > 0
-  );
+/* ── Hero Section ── */
+.setup-hero {
+  width: 100%;
+  max-width: 1120px;
+  padding: 8px 40px 36px;
+  text-align: center;
+}
 
-  const reports = useApi((signal) => sm.reports(10, signal), []);
+.setup-title {
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
 
-  const handleGenerate = async () => {
-    if (ids.length === 0) {
-      setError('No detections match these filters, so there is nothing to export.');
-      return;
-    }
-    setGenerating(true);
-    setError(null);
-    setInfo(null);
-    try {
-      const r = await sm.createReport({
-        detection_ids: ids,
-        from: range.fromIso,
-        to: range.toIso,
-        types,
-        status: statusFilter === 'all' ? null : statusFilter,
-        include_evidence: includeEvidence,
-        format: exportFormat,
-      });
-      reports.setData((d) => ({ total: (d?.total ?? 0) + 1, items: [r, ...(d?.items ?? [])].slice(0, 10) }));
-      setInfo(`Draft created: ${r.filename}. A person approves it before it is shared. Nothing was sent anywhere.`);
-    } catch (e) {
-      setError(errText(e, 'Could not create the report.')); // e.g. 422 when nothing matches
-    } finally {
-      setGenerating(false);
-    }
-  };
+.setup-subtitle {
+  font-size: 15px;
+  color: rgba(163, 166, 184, 0.9);
+  margin-bottom: 32px;
+  line-height: 1.55;
+  max-width: 680px;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-  const replaceReport = (r: Report) =>
-    reports.setData((d) => (d ? { ...d, items: d.items.map((x) => (x.id === r.id ? r : x)) } : d));
+/* Progress bar */
+.setup-progress-track {
+  width: 100%;
+  max-width: 440px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 99px;
+  margin: 0 auto 28px;
+  overflow: hidden;
+}
 
-  const handleDownload = async (r: Report, kind: Format) => {
-    setBusyId(r.id);
-    setError(null);
-    try {
-      await sm.downloadReport(r.id, kind, r.filename.replace(/\.[a-z]+$/i, `.${kind}`));
-    } catch (e) {
-      setError(errText(e, 'Download failed.'));
-    } finally {
-      setBusyId(null);
-    }
-  };
+.setup-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #4f63f0, #8b9bff, #34d399);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  const handlePreview = async (r: Report) => {
-    setBusyId(r.id);
-    setError(null);
-    try {
-      setPreviewHtml({ id: r.id, html: await sm.reportHtml(r.id) });
-    } catch (e) {
-      setError(errText(e, 'Could not load the preview.'));
-    } finally {
-      setBusyId(null);
-    }
-  };
+/* Stepper Pills */
+.setup-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
 
-  const handleApprove = async (r: Report) => {
-    setBusyId(r.id);
-    setError(null);
-    const before = r;
-    replaceReport({ ...r, status: 'approved' }); // optimistic
-    try {
-      replaceReport(await sm.approveReport(r.id));
-    } catch (e) {
-      replaceReport(before);
-      setError(errText(e, 'Could not approve the report.'));
-    } finally {
-      setBusyId(null);
-    }
-  };
+.step-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #7b7e92;
+  padding: 6px 16px 6px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  transition: all 0.2s ease;
+}
 
-  const header = <Header title="Reports" subtitle="Export detections with reasons and evidence for your team or the platforms" />;
-  if (missing) {
-    return (
-      <>
-        {header}
-        <div className="panel-content">
-          <NoBrand />
-        </div>
-      </>
-    );
+.step-item.clickable {
+  cursor: pointer;
+}
+
+.step-item.active {
+  color: #ffffff;
+  background: rgba(79, 99, 240, 0.12);
+  border-color: rgba(79, 99, 240, 0.35);
+  box-shadow: 0 0 16px rgba(79, 99, 240, 0.15);
+}
+
+.step-item.completed {
+  color: #34d399;
+}
+
+.step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a3a6b8;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.step-item.active .step-num {
+  background: linear-gradient(135deg, #4f63f0, #5b4fe0);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(79, 99, 240, 0.5);
+}
+
+.step-item.completed .step-num {
+  background: rgba(52, 211, 153, 0.15);
+  border-color: rgba(52, 211, 153, 0.3);
+  color: #34d399;
+}
+
+.step-connector {
+  width: 28px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* ── Main Dual-Card Grid ── */
+.setup-card-grid {
+  width: 100%;
+  max-width: 1120px;
+  padding: 0 40px;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  align-items: start;
+  gap: 24px;
+}
+
+/* ── Left Guidance Card ── */
+.setup-info-card {
+  background: var(--bg-card, #121217);
+  border: 1px solid var(--border-card, #23232c);
+  border-radius: 20px;
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.step-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8b9bff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  background: rgba(139, 155, 255, 0.1);
+  border: 1px solid rgba(139, 155, 255, 0.22);
+  border-radius: 999px;
+  align-self: flex-start;
+}
+
+.step-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #8b9bff;
+}
+
+.step-heading {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.step-description {
+  font-size: 13.5px;
+  line-height: 1.65;
+  color: rgba(163, 166, 184, 0.9);
+}
+
+.step-callout {
+  background: rgba(52, 211, 153, 0.08);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  border-radius: 12px;
+  padding: 13px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  color: #4fe0ae;
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+.step-callout strong {
+  display: block;
+  font-size: 12.5px;
+  color: #5cf2bd;
+  margin-bottom: 2px;
+}
+
+.callout-icon {
+  color: #34d399;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.step-tip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.step-tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 12.5px;
+  color: #a3a6b8;
+  line-height: 1.5;
+}
+
+.step-tip-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #8b9bff;
+}
+
+/* Setup Checklist */
+.setup-checklist-box {
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checklist-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7b7e92;
+}
+
+.checklist-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #636682;
+}
+
+.checklist-row .chk-icon {
+  color: #464962;
+}
+
+.checklist-row.done {
+  color: #d1d3df;
+}
+
+.checklist-row.done .chk-icon {
+  color: #34d399;
+}
+
+/* ── Right Form Card ── */
+.setup-form-card {
+  background: var(--bg-card, #121217);
+  border: 1px solid var(--border-card, #23232c);
+  border-radius: 20px;
+  padding: 32px 34px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+
+.step-form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  flex: 1;
+}
+
+/* Form section headers */
+.form-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.section-header-icon {
+  color: #8b9bff;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.form-section-headline {
+  font-size: 17px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 3px;
+}
+
+.form-section-sub {
+  font-size: 13px;
+  color: #a3a6b8;
+  line-height: 1.45;
+}
+
+/* Setup fields */
+.setup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.setup-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #d4d6e5;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.required-dot {
+  color: #f0566a;
+  font-weight: 700;
+}
+
+.optional-tag {
+  font-weight: 400;
+  color: #7b7e92;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.setup-helper {
+  font-size: 12px;
+  color: #7b7e92;
+  line-height: 1.45;
+  margin-top: -2px;
+}
+
+.setup-input,
+.setup-select {
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid #2a2a35;
+  padding: 0 14px;
+  font-size: 14px;
+  font-family: var(--font-family);
+  color: #f0f1f7;
+  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.setup-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238e90a3' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px;
+}
+
+.setup-select option {
+  background-color: #121217;
+  color: #f0f1f7;
+}
+
+.setup-input:focus,
+.setup-select:focus {
+  border-color: rgba(79, 99, 240, 0.7);
+  background: rgba(79, 99, 240, 0.05);
+  box-shadow: 0 0 0 3px rgba(79, 99, 240, 0.12);
+  outline: none;
+}
+
+.setup-input.field-error {
+  border-color: rgba(240, 86, 106, 0.6);
+  background: rgba(240, 86, 106, 0.05);
+}
+
+.setup-field-error-text {
+  font-size: 12px;
+  color: #ff8a98;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+}
+
+/* ── Logo Upload Box ── */
+.logo-upload-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1.5px dashed #2d2d3a;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+.logo-upload-box:hover {
+  border-color: rgba(79, 99, 240, 0.45);
+  background: rgba(79, 99, 240, 0.03);
+}
+
+.logo-preview-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #4f63f0, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: 800;
+  color: #ffffff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(79, 99, 240, 0.35);
+}
+
+.logo-preview-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.logo-status-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.logo-meta {
+  font-size: 12px;
+  color: #34d399;
+  line-height: 1.4;
+}
+
+.logo-meta.neutral {
+  color: #8b90a3;
+}
+
+.replace-btn {
+  border: 1px solid #2d2d3a;
+  background: rgba(255, 255, 255, 0.04);
+  color: #d1d3df;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.replace-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+/* ── Step 2: Assets Whitelist Styles ── */
+.setup-sub-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+}
+
+.sub-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sub-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.add-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+}
+
+.inline-add-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.inline-select {
+  height: 42px;
+  width: 150px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid #2c2c38;
+  color: #f0f1f7;
+  padding: 0 10px;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.inline-select option {
+  background: #121217;
+  color: #f0f1f7;
+}
+
+.inline-input {
+  height: 42px;
+  flex: 1;
+  font-size: 13.5px;
+}
+
+.inline-add-btn {
+  height: 42px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.inline-error-text {
+  font-size: 12px;
+  color: #ff8a98;
+}
+
+/* Asset Cards */
+.asset-items-container {
+  margin-top: 4px;
+}
+
+.asset-cards-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.asset-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 10px;
+  transition: all 0.15s ease;
+}
+
+.asset-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.asset-card-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.asset-platform-tag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(79, 99, 240, 0.12);
+  color: #8b9bff;
+  border: 1px solid rgba(79, 99, 240, 0.25);
+}
+
+.asset-identifier {
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.asset-sub-id {
+  font-size: 11px;
+  color: #7b7e92;
+}
+
+.asset-delete-btn {
+  background: none;
+  border: none;
+  color: #636682;
+  padding: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.asset-delete-btn:hover {
+  color: #f0566a;
+  background: rgba(240, 86, 106, 0.1);
+}
+
+.asset-empty-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px dashed rgba(255, 255, 255, 0.07);
+  color: #7b7e92;
+  font-size: 12.5px;
+}
+
+.empty-icon {
+  color: #555870;
+  flex-shrink: 0;
+}
+
+/* App Add Panel */
+.app-add-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+}
+
+.app-add-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.app-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sub-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #d1d3df;
+}
+
+.app-input {
+  height: 42px;
+  font-size: 13px;
+}
+
+.app-add-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* Guiding note */
+.setup-guide-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: #a3a6b8;
+  line-height: 1.5;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+}
+
+.note-icon {
+  color: #8b9bff;
+  flex-shrink: 0;
+}
+
+.setup-guide-note a {
+  color: #8b9bff;
+  font-weight: 600;
+}
+
+/* ── Step 3: Engine & Scan Styles ── */
+.scope-selection-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scope-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.scope-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(139, 155, 255, 0.25);
+}
+
+.scope-card.active {
+  background: rgba(79, 99, 240, 0.08);
+  border-color: rgba(79, 99, 240, 0.45);
+  box-shadow: 0 0 16px rgba(79, 99, 240, 0.1);
+}
+
+.scope-radio-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #3d4058;
+  margin-top: 2px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.scope-card.active .scope-radio-dot {
+  border-color: #4f63f0;
+  background: radial-gradient(circle, #8b9bff 40%, transparent 45%);
+}
+
+.scope-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.scope-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.scope-desc {
+  font-size: 12px;
+  color: #a3a6b8;
+  line-height: 1.45;
+}
+
+/* Scan Preview */
+.setup-scan-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+}
+
+.setup-scan-ready-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #34d399;
+  align-self: flex-start;
+}
+
+.setup-sources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.source-health-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+}
+
+.source-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #d1d3df;
+}
+
+.source-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.12);
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+/* Security Notice */
+.setup-security-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #636682;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.notice-lock {
+  color: #555870;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Error Banner */
+.setup-error-banner {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(240, 86, 106, 0.12);
+  border: 1px solid rgba(240, 86, 106, 0.35);
+  color: #ff8a98;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* ── Footer Navigation Actions ── */
+.setup-action-footer {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.setup-back-btn {
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 12px;
+  border: 1px solid #282834;
+  background: rgba(255, 255, 255, 0.03);
+  color: #a3a6b8;
+  font-size: 13.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.setup-back-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.continue-btn {
+  height: 48px;
+  padding: 0 28px;
+  font-size: 14.5px;
+  font-weight: 700;
+  border-radius: 12px;
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.continue-btn:not(:disabled):hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(79, 99, 240, 0.5);
+}
+
+.continue-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.continue-btn .btn-spinner {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  animation: sp-spin 0.7s linear infinite;
+}
+
+@keyframes sp-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive Adaptations ── */
+@media (max-width: 960px) {
+  .setup-topbar,
+  .setup-hero,
+  .setup-card-grid {
+    padding-left: 24px;
+    padding-right: 24px;
   }
 
-  const pv = ids.length > 0 ? preview.data : null;
-  const stats = pv?.stats ?? { detections: ids.length === 0 ? 0 : selected.length, social: 0, apps: 0, confirmed: 0, official_excluded: brand?.official_assets ?? 0 };
-  const rows = pv?.rows ?? [];
-  const showSampleChip = !!pv && (pv.is_sample || pv.includes_sample);
+  .setup-card-grid {
+    grid-template-columns: 1fr;
+  }
 
-  return (
-    <>
-      {header}
+  .setup-info-card {
+    position: static;
+  }
 
-      <div className="panel-content">
-        <div className="pdf-reports-wrap">
-          {error && <Notice onClose={() => setError(null)}>{error}</Notice>}
-          {info && <Notice kind="info" onClose={() => setInfo(null)}>{info}</Notice>}
+  .setup-title {
+    font-size: 30px;
+  }
 
-          {/* Top 2-Column Split */}
-          <div className="reports-top-split">
-            {/* Left: Export Form */}
-            <div className="card export-form-card">
-              <h3 className="panel-card-title">Export detections</h3>
+  .app-add-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
-              <div className="export-field">
-                <label className="export-lbl" htmlFor="rp-range">Date range</label>
-                <select
-                  id="rp-range"
-                  className="export-select"
-                  value={rangeKey}
-                  onChange={(e) => setRangeKey(e.target.value as RangeKey)}
-                >
-                  <option value="7d">{rangeLabel('7d')}</option>
-                  <option value="30d">{rangeLabel('30d')}</option>
-                  <option value="qtd">{rangeLabel('qtd')}</option>
-                </select>
-              </div>
+@media (max-width: 600px) {
+  .setup-topbar,
+  .setup-hero,
+  .setup-card-grid {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 
-              {/* Include checkboxes */}
-              <div className="export-field">
-                <label className="export-lbl">Include</label>
-                <div className="checkbox-column">
-                  <label className="chk-label">
-                    <input type="checkbox" checked={includeProfiles} onChange={(e) => setIncludeProfiles(e.target.checked)} className="chk-input" />
-                    <span>Fake profiles</span>
-                  </label>
+  .setup-title {
+    font-size: 24px;
+  }
 
-                  <label className="chk-label">
-                    <input type="checkbox" checked={includeBrandPages} onChange={(e) => setIncludeBrandPages(e.target.checked)} className="chk-input" />
-                    <span>Fake brand pages</span>
-                  </label>
+  .setup-subtitle {
+    font-size: 13.5px;
+  }
 
-                  <label className="chk-label">
-                    <input type="checkbox" checked={includeScamAccounts} onChange={(e) => setIncludeScamAccounts(e.target.checked)} className="chk-input" />
-                    <span>Scam accounts</span>
-                  </label>
+  .setup-stepper {
+    gap: 4px;
+  }
 
-                  <label className="chk-label">
-                    <input type="checkbox" checked={includeApps} onChange={(e) => setIncludeApps(e.target.checked)} className="chk-input" />
-                    <span>Fake apps</span>
-                  </label>
-                </div>
-              </div>
+  .step-item {
+    padding: 5px 10px 5px 6px;
+    font-size: 12px;
+  }
 
-              {/* Status */}
-              <div className="export-field">
-                <label className="export-lbl" htmlFor="rp-status">Status</label>
-                <select
-                  id="rp-status"
-                  className="export-select"
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                >
-                  <option value="all">All statuses</option>
-                  <option value="new">New only</option>
-                  <option value="reviewing">Reviewing only</option>
-                  <option value="confirmed">Confirmed only</option>
-                </select>
-              </div>
+  .step-connector {
+    width: 12px;
+  }
 
-              {/* Evidence checkbox */}
-              <div className="export-field">
-                <label className="chk-label">
-                  <input type="checkbox" checked={includeEvidence} onChange={(e) => setIncludeEvidence(e.target.checked)} className="chk-input" />
-                  <span>Include evidence (screenshots, URLs, hashes)</span>
-                </label>
-              </div>
+  .inline-add-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
 
-              {/* Format pills */}
-              <div className="export-field">
-                <label className="export-lbl">Format</label>
-                <div className="format-toggle-row">
-                  <button
-                    type="button"
-                    className={`format-toggle-btn ${exportFormat === 'html' ? 'active' : ''}`}
-                    onClick={() => setExportFormat('html')}
-                    title="A printable page. Use your browser's Print, then Save as PDF."
-                  >
-                    Printable report
-                  </button>
-                  <button
-                    type="button"
-                    className={`format-toggle-btn ${exportFormat === 'csv' ? 'active' : ''}`}
-                    onClick={() => setExportFormat('csv')}
-                  >
-                    CSV data
-                  </button>
-                </div>
-                {exportFormat === 'html' && <div className="helper-note">Opens as a printable page: use Print, then Save as PDF. A built-in PDF file is not available.</div>}
-              </div>
+  .inline-select {
+    width: 100%;
+  }
 
-              <button
-                type="button"
-                className="btn-primary generate-btn"
-                onClick={() => void handleGenerate()}
-                disabled={generating || !canWrite || ids.length === 0}
-                title={canWrite ? undefined : 'Your role can view but not create reports'}
-              >
-                {generating ? 'Generating…' : 'Generate report'}
-              </button>
-              <div className="helper-note">Creates a draft. A person approves it; nothing is sent automatically.</div>
-            </div>
+  .setup-form-card {
+    padding: 24px 18px;
+  }
+}
 
-            {/* Right: Preview Dossier */}
-            <div className="card report-preview-card">
-              <div className="preview-card-header">
-                <div className="preview-title-row">
-                  <div className="report-doc-badge">{(brand?.name ?? 'A').charAt(0).toUpperCase()}</div>
-                  <div>
-                    <h3 className="preview-doc-title">Brand Protection Report</h3>
-                    <div className="preview-doc-sub">
-                      {brand?.name ?? ''} · {rangeText(range)} · Preview
-                    </div>
-                  </div>
-                </div>
+/* ── Light-mode overrides ── */
+:root[data-theme='light'] .setup-container {
+  background: var(--bg-page, #eef0f8);
+  background-image:
+    radial-gradient(ellipse 70% 400px at 50% 0%, rgba(74, 92, 224, 0.07) 0%, transparent 100%);
+}
 
-                {showSampleChip && <span className="sample-data-chip" data-testid="preview-sample-chip">Sample data</span>}
-              </div>
+:root[data-theme='light'] .setup-info-card,
+:root[data-theme='light'] .setup-form-card {
+  background: var(--bg-card, #ffffff);
+  border-color: var(--border-card, #d4d8ea);
+}
 
-              {/* Top stats bar */}
-              <div className="report-stats-grid">
-                <div className="report-stat-cell">
-                  <span className="stat-value">{stats.detections}</span>
-                  <span className="stat-desc">Detections</span>
-                </div>
-                <div className="report-stat-cell">
-                  <span className="stat-value">{stats.social}</span>
-                  <span className="stat-desc">Social</span>
-                </div>
-                <div className="report-stat-cell">
-                  <span className="stat-value">{stats.apps}</span>
-                  <span className="stat-desc">Apps</span>
-                </div>
-                <div className="report-stat-cell">
-                  <span className="stat-value">{stats.confirmed}</span>
-                  <span className="stat-desc">Confirmed</span>
-                </div>
-                <div className="report-stat-cell">
-                  <span className="stat-value">{stats.official_excluded}</span>
-                  <span className="stat-desc">Official, excluded</span>
-                </div>
-              </div>
+:root[data-theme='light'] .setup-title,
+:root[data-theme='light'] .step-heading,
+:root[data-theme='light'] .form-section-headline,
+:root[data-theme='light'] .setup-logo-text,
+:root[data-theme='light'] .sub-section-title,
+:root[data-theme='light'] .scope-title {
+  color: var(--text-main, #12131e);
+}
 
-              {/* Detections Preview Table */}
-              <div className="preview-table-wrap">
-                {(all.loading || preview.loading) && <Loading what="Loading preview" />}
-                {all.error && <ErrorBox error={all.error} onRetry={all.reload} compact />}
-                {preview.error && <ErrorBox error={preview.error} onRetry={preview.reload} compact />}
-                {all.data && ids.length === 0 && <Empty>No detections match these filters.</Empty>}
-                <table className="preview-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '36px' }}>#</th>
-                      <th>Name or handle</th>
-                      <th>Platform</th>
-                      <th>Type</th>
-                      <th>Score</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => (
-                      <tr key={row.id}>
-                        <td className="row-num-cell">{row.n}</td>
-                        <td className="row-name-cell">{reportName(byId.get(row.id), row.name)}</td>
-                        <td className="cell-muted">{platformLabel(row.platform)}</td>
-                        <td className="cell-muted">{typeLabel(row.type)}</td>
-                        <td className="row-score-cell">{row.score}</td>
-                        <td>
-                          <span className={`chip ${statusChip(row.status)}`}>{statusLabel(row.status)}</span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+:root[data-theme='light'] .setup-subtitle,
+:root[data-theme='light'] .step-description,
+:root[data-theme='light'] .form-section-sub,
+:root[data-theme='light'] .setup-helper,
+:root[data-theme='light'] .scope-desc {
+  color: var(--text-muted, #464a6a);
+}
 
-          {/* Bottom Recent Exports */}
-          <div className="card recent-exports-card">
-            <h3 className="panel-card-title">Recent exports</h3>
+:root[data-theme='light'] .setup-input,
+:root[data-theme='light'] .setup-select,
+:root[data-theme='light'] .inline-select {
+  background: var(--bg-inner, #f2f4fb);
+  border-color: var(--border-card, #d4d8ea);
+  color: var(--text-main, #12131e);
+}
 
-            <div className="recent-exports-list">
-              {reports.loading && <Loading />}
-              {reports.error && <ErrorBox error={reports.error} onRetry={reports.reload} compact />}
-              {reports.data && reports.data.items.length === 0 && <Empty>No reports yet. Generate one from the form above.</Empty>}
-              {(reports.data?.items ?? []).map((r) => (
-                <div key={r.id} className="recent-export-item" data-testid="report-item">
-                  <div className="export-file-info">
-                    <span className="export-filename">{r.filename}</span>
-                    <span className="export-filemeta">
-                      {r.format.toUpperCase()} · {fmtBytes(r.size_bytes)} · {r.created_by} · {fmtDay(r.created_at)} · {r.status === 'approved' ? 'Approved' : 'Draft'}
-                      {r.includes_sample ? ' · Sample data' : ''}
-                    </span>
-                  </div>
+:root[data-theme='light'] .setup-input:focus,
+:root[data-theme='light'] .setup-select:focus {
+  border-color: var(--accent, #4a5ce0);
+  background: rgba(74, 92, 224, 0.04);
+}
 
-                  <div className="cases-header-actions">
-                    <button type="button" className="btn-secondary btn-sm" onClick={() => void handlePreview(r)} disabled={busyId === r.id}>
-                      Preview
-                    </button>
-                    {r.status === 'draft' && (
-                      <button type="button" className="btn-secondary btn-sm" onClick={() => void handleApprove(r)} disabled={busyId === r.id || !canWrite}>
-                        Approve
-                      </button>
-                    )}
-                    <button type="button" className="btn-secondary btn-sm download-btn" onClick={() => void handleDownload(r, r.format)} disabled={busyId === r.id}>
-                      <Download size={13} />
-                      <span>Download</span>
-                    </button>
-                    <button
-                      type="button"
-                      className="btn-secondary btn-sm"
-                      onClick={() => void handleDownload(r, r.format === 'csv' ? 'html' : 'csv')}
-                      disabled={busyId === r.id}
-                    >
-                      As {r.format === 'csv' ? 'HTML' : 'CSV'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+:root[data-theme='light'] .setup-sub-section,
+:root[data-theme='light'] .setup-scan-preview {
+  background: var(--bg-inner, #f2f4fb);
+  border-color: var(--border-card, #d4d8ea);
+}
 
-            {previewHtml && (
-              <div style={{ marginTop: 14 }}>
-                <div className="cases-header-actions" style={{ justifyContent: 'space-between', marginBottom: 8 }}>
-                  <span className="export-filename">Report preview</span>
-                  <button type="button" className="btn-secondary btn-sm" onClick={() => setPreviewHtml(null)}>
-                    Close preview
-                  </button>
-                </div>
-                {/* sandbox="" : no scripts, no same-origin access. The HTML is also escaped by the server. */}
-                <iframe title="Report preview" sandbox="" srcDoc={previewHtml.html} style={{ width: '100%', height: 420, border: '1px solid var(--border-card)', borderRadius: 12, background: '#fff' }} />
-              </div>
-            )}
-          </div>
+:root[data-theme='light'] .asset-card,
+:root[data-theme='light'] .source-health-card {
+  background: #ffffff;
+  border-color: var(--border-card, #d4d8ea);
+}
 
-          <SampleNote brandName={brand?.name} />
-        </div>
-      </div>
-    </>
-  );
-};
+:root[data-theme='light'] .asset-identifier,
+:root[data-theme='light'] .source-name {
+  color: var(--text-main, #12131e);
+}
+
+:root[data-theme='light'] .scope-card {
+  background: var(--bg-inner, #f2f4fb);
+  border-color: var(--border-card, #d4d8ea);
+}
+
+:root[data-theme='light'] .scope-card.active {
+  background: rgba(74, 92, 224, 0.08);
+  border-color: var(--accent, #4a5ce0);
+}
+
+:root[data-theme='light'] .setup-back-btn {
+  background: rgba(0, 0, 40, 0.03);
+  border-color: var(--border-card, #d4d8ea);
+  color: var(--text-muted, #464a6a);
+}
+
+:root[data-theme='light'] .setup-label {
+  color: var(--t-strong, #1a1c2e);
+}
