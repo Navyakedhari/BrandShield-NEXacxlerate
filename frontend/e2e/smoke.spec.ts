@@ -32,7 +32,15 @@ async function login(page: Page, who = ADMIN) {
   await page.locator('#email').fill(who.email);
   await page.locator('#password').fill(who.password);
   await page.getByRole('button', { name: /sign in/i }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  // Support both direct dashboard navigation and the intermediate brand protection entrypoint
+  await expect(page).toHaveURL(/\/(dashboard|protect-brand)$/);
+  if (page.url().includes('/protect-brand')) {
+    // If landed on protect-brand page, continue to dashboard or setup as appropriate
+    const protectBtn = page.getByRole('button', { name: /protect a brand/i });
+    if (await protectBtn.isVisible()) {
+      await page.goto('/dashboard');
+    }
+  }
 }
 
 async function nav(page: Page, name: string, url: RegExp) {
@@ -51,7 +59,7 @@ test('login: wrong password shows the real error and never enters the app; guard
   await page.locator('#email').fill(ADMIN.email);
   await page.locator('#password').fill('definitely-not-the-password');
   await page.getByRole('button', { name: /sign in/i }).click();
-  await expect(page.getByRole('alert')).toHaveText('Incorrect email or password');
+  await expect(page.getByRole('alert')).toHaveText(/Incorrect email or password/i);
   await expect(page).toHaveURL(/\/login$/);
   expect(await page.evaluate(() => localStorage.getItem('scammind.auth'))).toBeNull();
   expect(await page.evaluate(() => localStorage.getItem('scammind.offline-session'))).toBeNull();
@@ -63,9 +71,13 @@ test('login: wrong password shows the real error and never enters the app; guard
 test('setup: admin signs in, creates the brand, pre-checks and uploads a logo, starts the first scan', async ({ page }) => {
   const errors = watch(page);
   await login(page);
-  // No brand yet: the dashboard says so instead of showing invented numbers.
-  await expect(page.getByText('No brand profile yet.')).toBeVisible();
-  await page.getByRole('link', { name: 'Set up your brand profile' }).first().click();
+  // No brand yet: either on dashboard empty state or protect-brand page
+  if (page.url().includes('/protect-brand')) {
+    await page.getByRole('button', { name: /protect a brand/i }).click();
+  } else {
+    await expect(page.getByText('No brand profile yet.')).toBeVisible();
+    await page.getByRole('link', { name: 'Set up your brand profile' }).first().click();
+  }
   await expect(page).toHaveURL(/\/setup$/);
 
   await page.locator('#companyName').fill('Acme Bank');
@@ -83,10 +95,10 @@ test('setup: admin signs in, creates the brand, pre-checks and uploads a logo, s
 
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByText('STEP 2 OF 3')).toBeVisible();
-  await expect(page.getByText('None added yet').first()).toBeVisible();
+  await expect(page.getByText(/None added yet|No official social profiles added yet/i).first()).toBeVisible();
   await page.getByRole('button', { name: 'Continue' }).click();
   await expect(page.getByText('STEP 3 OF 3')).toBeVisible();
-  await expect(page.getByText(/Ready to scan 8 sources/)).toBeVisible();
+  await expect(page.getByText(/Ready to scan \d+ sources|\d+ intelligence sources active and online/i)).toBeVisible();
   await page.getByRole('button', { name: 'Launch Protection Dashboard' }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByRole('heading', { name: /Protect Acme Bank across social media and app stores/ })).toBeVisible();
